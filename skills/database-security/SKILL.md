@@ -34,14 +34,14 @@ Use this specialist workflow only after the master router and case scope gate ar
 □ Backup and snapshot permissions
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 |
-|------|------|
-| 官方 CLI | 连接与枚举 |
-| sqlmap | 注入验证（授权） |
-| nuclei | 已知暴露模板 |
-| 云 RDS 控制台审计 | 配置 |
+| Tool | Purpose |
+|------|---------|
+| Official CLI | Connection and enumeration |
+| sqlmap | Injection validation (authorized) |
+| nuclei | Known-exposure templates |
+| Cloud RDS console audit | Configuration |
 
 ## 参考
 
