@@ -43,7 +43,7 @@ Use this specialist workflow only after the master router and case scope gate ar
 | nuclei | Known-exposure templates |
 | Cloud RDS console audit | Configuration |
 
-## 参考
+## References
 
 - `references/db-misconfig-checklist.md`
 - `../pentest-tools/` `../cloud-k8s/`
