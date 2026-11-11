@@ -2,9 +2,9 @@
 
 Use this repository as a client-neutral router for authorized reverse-engineering and security workflows.
 
-## Language policy
+## Documentation policy
 
-Write all new and rewritten repository content in clear, correct English. Do not create translated duplicates, bilingual prose, deprecated aliases, promotional content, or stale references. Preserve technical identifiers, commands, payloads, and quoted sample data when they are not prose.
+Write all maintained documentation in clear, correct English for agents, not humans. State scope, inputs, routing, tools, safety gates, outputs, and validation. Do not create marketing, UI walkthroughs, translated duplicates, bilingual prose, deprecated aliases, or stale references. Keep one canonical document per concept; merge unique material before deleting a superseded copy. Preserve technical identifiers, commands, payloads, and quoted sample data when they are not prose.
 
 ## Required reading order
 

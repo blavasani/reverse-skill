@@ -69,6 +69,13 @@ Preserve scope, timestamps, commands, provenance, hashes, and tool versions wher
 
 `CTF-Sandbox-Orchestrator/` contains CTF scenarios. `burp-mcp-full/` contains an optional Burp Suite MCP integration.
 
+## Documentation invariants
+
+- All maintained prose is clear English and agent-first; there is no human-oriented documentation surface.
+- Keep one canonical document per concept. Merge unique material before deleting duplicates.
+- Do not add translated copies, deprecated aliases, promotional content, or stale links.
+- Treat `SKILL.md`, `RULES.md`, `skills/config/routing.json`, and operational contracts as authoritative sources; generated indexes are derived output.
+
 ## Maintenance
 
 Preserve all skill directories and operational contracts. Modify routing only in `skills/config/routing.json`. Keep `LICENSE` and legally required notices. Treat generated indexes as generated output. After routing or configuration changes, run the smallest applicable platform validation documented in `AGENTS.md`.

@@ -4,9 +4,9 @@
 
 ---
 
-## Language policy
+## Documentation policy
 
-All maintained repository prose MUST be clear, correct English. Do not add translated duplicate documents, bilingual prose, deprecated aliases, promotional content, or stale references. Preserve technical identifiers, commands, payloads, and quoted sample data when they are not prose. When replacing a legacy document, migrate all references before deleting it.
+All maintained documentation MUST be clear, correct English and agent-first. Each concept MUST have one canonical document that states scope, inputs, routing, tools, safety gates, outputs, and validation. Do not add human-oriented marketing, UI walkthroughs, translated duplicates, bilingual prose, deprecated aliases, or stale references. Merge unique material into the canonical document, migrate references, and delete superseded copies. Preserve technical identifiers, commands, payloads, and quoted sample data when they are not prose.
 
 ## ACTIVATION AND CONSENT GATE (before any side effect)
 
