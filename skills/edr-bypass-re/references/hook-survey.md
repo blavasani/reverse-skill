@@ -50,59 +50,59 @@ Get-ChildItem 'C:\Windows\System32\drivers\*.sys' |
 
 EDRs almost always hook these `ntdll.dll` exports, grouped by ATT&CK behavior:
 
-| 函数 | 监控的行为 | ATT&CK |
-|------|-----------|--------|
-| `NtCreateThreadEx` | 远程线程注入、QueueUserAPC 注入 | T1055.002 / T1055.004 |
-| `NtAllocateVirtualMemory` | shellcode 申请 RWX 内存 | T1055 |
-| `NtAllocateVirtualMemoryEx` | 跨进程内存申请（Win10+ 新 API） | T1055 |
-| `NtProtectVirtualMemory` | 改页面权限 RW→RX | T1055 |
-| `NtWriteVirtualMemory` | 跨进程写 shellcode | T1055.012 |
-| `NtMapViewOfSection` | section-based 注入（Process Doppelganging / Ghosting） | T1055.013 |
-| `NtCreateSection` | 配合 MapViewOfSection | T1055.013 |
-| `NtOpenProcess` | 打开目标进程拿 handle | T1057 |
-| `NtQueueApcThread` / `NtQueueApcThreadEx` | APC 注入 | T1055.004 |
-| `NtCreateProcess` / `NtCreateProcessEx` / `NtCreateUserProcess` | 创建子进程（含 PPID spoof） | T1106 |
-| `NtSetContextThread` | 改线程上下文（线程劫持注入） | T1055.003 |
-| `NtResumeThread` | 注入完后恢复线程 | T1055 |
-| `NtQuerySystemInformation` | 枚举进程 / 驱动 / handle | T1057 / T1082 |
-| `NtAdjustPrivilegesToken` | 提权获取 SeDebugPrivilege 等 | T1134 |
-| `NtLoadDriver` | 加载内核驱动（BYOVD） | T1543.003 |
+| Function | Monitored behavior | ATT&CK |
+|----------|-------------------|--------|
+| `NtCreateThreadEx` | Remote-thread injection, QueueUserAPC injection | T1055.002 / T1055.004 |
+| `NtAllocateVirtualMemory` | Allocate RWX memory for shellcode | T1055 |
+| `NtAllocateVirtualMemoryEx` | Cross-process memory allocation (new API on Win10+) | T1055 |
+| `NtProtectVirtualMemory` | Change page permissions RW→RX | T1055 |
+| `NtWriteVirtualMemory` | Write shellcode across processes | T1055.012 |
+| `NtMapViewOfSection` | Section-based injection (Process Doppelganging / Ghosting) | T1055.013 |
+| `NtCreateSection` | Used with MapViewOfSection | T1055.013 |
+| `NtOpenProcess` | Open the target process and obtain a handle | T1057 |
+| `NtQueueApcThread` / `NtQueueApcThreadEx` | APC injection | T1055.004 |
+| `NtCreateProcess` / `NtCreateProcessEx` / `NtCreateUserProcess` | Create child processes (including PPID spoofing) | T1106 |
+| `NtSetContextThread` | Change thread context (thread-hijacking injection) | T1055.003 |
+| `NtResumeThread` | Resume a thread after injection | T1055 |
+| `NtQuerySystemInformation` | Enumerate processes / drivers / handles | T1057 / T1082 |
+| `NtAdjustPrivilegesToken` | Elevate privileges to obtain SeDebugPrivilege, etc. | T1134 |
+| `NtLoadDriver` | Load a kernel driver (BYOVD) | T1543.003 |
 
 ### 验证 hook 是否存在
 
 ```powershell
-# 简单：把磁盘 ntdll 和当前进程的 ntdll 反汇编 diff
-# 1. 拿磁盘 ntdll
+# Simple: disassemble-diff the disk ntdll against the current process ntdll
+# 1. Obtain the disk ntdll
 copy C:\Windows\System32\ntdll.dll C:\temp\ntdll_clean.dll
 
-# 2. 在 windbg 中 attach 任意进程，导出当前 ntdll 的 .text 段
+# 2. Attach to any process in WinDbg and export the current ntdll .text section
 # .writemem c:\temp\ntdll_live.bin ntdll!.text L?<size>
 
-# 3. 用 IDA / radare2 反汇编 NtAllocateVirtualMemory，正常应该是：
+# 3. Disassemble NtAllocateVirtualMemory with IDA / radare2; it should normally be:
 #    mov r10, rcx
 #    mov eax, <SSN>
 #    test byte ptr [...]
 #    jne ...
 #    syscall
 #    ret
-# 如果第一条变成 jmp <某地址>，那就是 hook
+# If the first instruction becomes jmp <address>, it is a hook
 ```
 
-## 3. 内核 callback 监控点
+## 3. Kernel Callback Monitoring Points
 
-EDR 注册的常见内核回调（一律可被 `attack-chain` 中的 BYOVD 路线 unregister，但代价高）：
+Common kernel callbacks registered by EDRs (all can be unregistered through the BYOVD route in `attack-chain`, but at high cost):
 
-| API | 注册的回调时机 | 防御方用途 |
-|-----|--------------|-----------|
-| `PsSetCreateProcessNotifyRoutineEx` | 进程创建 / 退出 | 拦截可疑 child process |
-| `PsSetCreateThreadNotifyRoutine` | 线程创建 / 退出 | 检测远程线程注入 |
-| `PsSetLoadImageNotifyRoutine` | DLL / EXE 加载到任意进程 | 模块完整性 / 未签名拦截 |
-| `CmRegisterCallback` / `CmRegisterCallbackEx` | 注册表操作 | 持久化检测 |
-| `ObRegisterCallbacks` | `OpenProcess` / `OpenThread` 句柄请求 | 防止 LSASS 句柄获取 (T1003.001) |
-| `MmRegisterPhysicalMemoryCallback` | 物理内存映射 | 防 DMA / 内存取证 |
-| `IoRegisterFsRegistrationChange` | 文件系统注册 | minifilter 协同 |
-| `KeRegisterNmiCallback` | NMI（极少 EDR 用） | 异常监控 |
-| `EtwRegister` (内核侧) | 内核 ETW 上报 | 跟 ETW-TI 共生 |
+| API | Callback timing | Defensive use |
+|-----|-----------------|---------------|
+| `PsSetCreateProcessNotifyRoutineEx` | Process creation / exit | Block suspicious child processes |
+| `PsSetCreateThreadNotifyRoutine` | Thread creation / exit | Detect remote-thread injection |
+| `PsSetLoadImageNotifyRoutine` | DLL / EXE loaded into any process | Module integrity / unsigned-image blocking |
+| `CmRegisterCallback` / `CmRegisterCallbackEx` | Registry operations | Persistence detection |
+| `ObRegisterCallbacks` | `OpenProcess` / `OpenThread` handle requests | Prevent LSASS handle acquisition (T1003.001) |
+| `MmRegisterPhysicalMemoryCallback` | Physical-memory mapping | Prevent DMA / memory forensics |
+| `IoRegisterFsRegistrationChange` | File-system registration | Minifilter coordination |
+| `KeRegisterNmiCallback` | NMI (rarely used by EDRs) | Anomaly monitoring |
+| `EtwRegister` (kernel side) | Kernel ETW reporting | Works with ETW-TI |
 
 ### 用 windbg 枚举已注册 callback
 
