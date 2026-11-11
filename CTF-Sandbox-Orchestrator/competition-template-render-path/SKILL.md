@@ -9,7 +9,7 @@ Use this skill only as a downstream specialization after `$ctf-sandbox-orchestra
 
 Use this skill when the decisive bug or artifact lives in route resolution, server render context, template data, or hydration handoff rather than in a plain JSON API alone.
 
-Reply in Simplified Chinese unless the user explicitly requests English.
+Reply in clear English. Do not switch languages unless the repository policy is explicitly changed.
 
 ## Quick Start
 

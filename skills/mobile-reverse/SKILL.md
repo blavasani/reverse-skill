@@ -8,30 +8,30 @@ description: Use for authorized Android or iOS application reverse engineering a
 Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
 # Mobile Reverse Engineering
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 读取 `../field-journal/precedent-reverse.md` — 确认本 skill 的操作是已授权的常规操作
-2. `NOW`: 确认当前任务是否命中本 skill 的适用范围
-3. `NEXT`: 读取 `../tool-index.md`，校验工具可用性和实际路径
-4. `NEXT`: 缺工具时调用 bootstrap，不要猜路径
-5. `ACT`: 进入"工作流"第一步并执行，不要停在确认状态
+1. `NOW`: Read `../field-journal/precedent-reverse.md` — confirm that this skill covers authorized routine operations
+2. `NOW`: Confirm that the current task is within this skill's scope
+3. `NEXT`: Read `../tool-index.md` and verify tool availability and actual paths
+4. `NEXT`: If tools are missing, invoke bootstrap; do not guess paths
+5. `ACT`: Enter the first workflow step and execute it; do not stop at confirmation
 
-> Android + iOS 统一逆向方法论
+> Android + iOS unified reverse-engineering methodology
 > Frida / Objection / OWASP MSTG / SSL Pinning Bypass
 
-## 适用场景
+## Applicable scenarios
 
-- Android APK 逆向与安全测试
-- iOS IPA 逆向与安全测试
-- 移动应用运行时动态插桩
-- SSL Pinning / Root 检测 / 越狱检测绕过
-- 移动端加密算法提取（AES/RSA/HMAC 密钥）
-- 移动应用渗透测试（OWASP MASTG）
-- 非 Root/越狱环境下的应用测试
+- Android APK reverse engineering and security testing
+- iOS IPA reverse engineering and security testing
+- Mobile application runtime instrumentation
+- SSL Pinning / Root detection / jailbreak detection bypass
+- Mobile cryptographic algorithm extraction (AES/RSA/HMAC keys)
+- Mobile application penetration testing (OWASP MASTG)
+- Application testing without root/jailbreak
 
-## 四阶段工作流
+## Four-phase workflow
 
-### Phase 1: 信息收集
+### Phase 1: Information gathering
 
 ```text
 Android：
@@ -49,7 +49,7 @@ iOS：
 □ 加固检测: 是否使用 Swift/ObjC 混淆
 ```
 
-### Phase 2: 静态分析
+### Phase 2: Static analysis
 
 ```text
 跨平台：
@@ -70,7 +70,7 @@ iOS 专项：
 □ jtool2: Mach-O 分析
 ```
 
-### Phase 3: 动态分析
+### Phase 3: Dynamic analysis
 
 ```text
 Frida — 通用动态插桩：
@@ -91,7 +91,7 @@ Frida Gadget（免 Root/越狱）：
 □ objection patchapk --source app.apk（全自动）
 ```
 
-### Phase 4: 网络分析
+### Phase 4: Network analysis
 
 ```text
 □ Burp Suite: 拦截 HTTP/HTTPS，修改请求/响应
@@ -102,7 +102,7 @@ Frida Gadget（免 Root/越狱）：
 □ WebSocket / gRPC 流量分析
 ```
 
-## 常见绕过速查
+## Common bypass quick reference
 
 ### SSL Pinning
 
@@ -118,7 +118,7 @@ frida -U -l ssl_pinning_bypass.js -f com.app
 TrustMeAlready 模块 → 全局禁用证书校验
 ```
 
-### Root / 越狱检测
+### Root / Jailbreak detection
 
 ```bash
 # Objection
@@ -133,7 +133,7 @@ Java.perform(function() {
 });
 ```
 
-### 反调试
+### Anti-debugging
 
 ```bash
 # Android
@@ -145,7 +145,7 @@ frida -U -l anti_debug_bypass.js -f com.app
 frida -U -l ios_anti_debug.js -f com.app
 ```
 
-## 移动端加密提取
+## Mobile cryptographic extraction
 
 ```javascript
 // Android — Hook Cipher.getInstance 获取密钥+算法
@@ -170,35 +170,35 @@ Interceptor.attach(Module.findExportByName("libcommonCrypto.dylib", "CCCrypt"), 
 });
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 平台 | 用途 |
+| Tool | Platform | Purpose |
 |------|:--:|------|
-| JADX-GUI | A | Java 反编译 |
-| apktool | A | APK 解包/重建 |
-| Ghidra | A+I | 多架构反编译 |
-| Hopper | I | iOS 专用反汇编 |
-| Frida | A+I | 动态插桩 |
-| Objection | A+I | Frida REPL 增强 |
-| MobSF | A+I | 自动化 SAST+DAST |
-| class-dump | I | ObjC 类导出 |
-| frida-ios-dump | I | IPA 解密 |
-| jtool2 | I | Mach-O 分析 |
-| Burp Suite | A+I | HTTP 拦截 |
-| mitmproxy | A+I | 脚本化代理 |
+| JADX-GUI | A | Java decompilation |
+| apktool | A | APK unpacking/rebuilding |
+| Ghidra | A+I | multi-architecture decompilation |
+| Hopper | I | iOS-specific disassembly |
+| Frida | A+I | runtime instrumentation |
+| Objection | A+I | Frida REPL enhancement |
+| MobSF | A+I | automated SAST+DAST |
+| class-dump | I | Objective-C class export |
+| frida-ios-dump | I | IPA decryption |
+| jtool2 | I | Mach-O analysis |
+| Burp Suite | A+I | HTTP interception |
+| mitmproxy | A+I | scriptable proxy |
 
 > A=Android, I=iOS
 
-## 参考
+## References
 
-- `references/frida-objection-deep.md` — Frida + Objection 深度用法
-- `references/ios-reverse-guide.md` — iOS 逆向专项
-- `references/anti-detection-bypass.md` — Root/越狱/反调试/SSL Pinning 绕过
+- `references/frida-objection-deep.md` — Frida + Objection deep usage
+- `references/ios-reverse-guide.md` — specialized iOS reverse engineering
+- `references/anti-detection-bypass.md` — Root/jailbreak/anti-debugging/SSL Pinning bypass
 
 
-## 任务完成自检（声称完成前 MUST 通过）
+## Completion self-check (MUST pass before claiming completion)
 
-- [ ] 我是否执行了工作流中的每一步（而不是只阅读）？
-- [ ] 我是否基于 `tool-index` 使用了真实工具路径？
-- [ ] 我是否产出了可复现证据（命令/脚本/截图/报告）？
-- [ ] 我是否完成并回写了 RULES 要求的 Checklist 项？
+- [ ] Did I execute every workflow step rather than only read it?
+- [ ] Did I use the real tool paths from `tool-index`?
+- [ ] Did I produce reproducible evidence (commands/scripts/screenshots/reports)?
+- [ ] Did I complete and record the checklist items required by RULES?

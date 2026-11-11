@@ -9,7 +9,7 @@ Use this skill only as a downstream specialization after `$ctf-sandbox-orchestra
 
 Use this skill when the decisive path is an encrypted ZIP/PKZIP archive rather than an upload parser or a generic crypto blob. Prefer the legacy ZipCrypto known-plaintext path when the challenge gives a predictable file, format header, template, or other recoverable plaintext. Do not begin with blind password brute force.
 
-Reply in Simplified Chinese unless the user explicitly requests English. Keep commands and tool output in their original form.
+Reply in clear English. Do not switch languages unless the repository policy is explicitly changed. Keep commands and tool output in their original form.
 
 ## Quick Start
 

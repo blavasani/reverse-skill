@@ -60,7 +60,7 @@ For writing style, tone, and voice guidance, use `Skill(ce:writer)` with **The E
 - **文件名格式**：`YYYY-MM-DD_[类型]-[目标简称]-report.md`
 - **如果项目有 `docs/` 目录**：优先放在 `docs/` 下
 - **编码**：UTF-8
-- **语言**：跟随用户对话语言（中文对话出中文报告，英文对话出英文报告）
+- **Language**: Write reports in clear English.
 
 ### 质量要求
 

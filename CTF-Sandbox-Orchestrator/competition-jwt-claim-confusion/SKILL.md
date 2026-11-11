@@ -9,7 +9,7 @@ Use this skill only as a downstream specialization after `$ctf-sandbox-orchestra
 
 Use this skill when the decisive bug is not just "there is a JWT," but how headers, claims, and key selection turn into accepted identity.
 
-Reply in Simplified Chinese unless the user explicitly requests English.
+Reply in clear English. Do not switch languages unless the repository policy is explicitly changed.
 
 ## Quick Start
 

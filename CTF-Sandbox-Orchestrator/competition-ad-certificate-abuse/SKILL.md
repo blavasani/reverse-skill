@@ -9,7 +9,7 @@ Use this skill only as a downstream specialization after `$ctf-sandbox-orchestra
 
 Use this skill when the decisive identity edge is certificate-based and the hard part is proving how a template or CA policy turns into accepted privilege.
 
-Reply in Simplified Chinese unless the user explicitly requests English.
+Reply in clear English. Do not switch languages unless the repository policy is explicitly changed.
 
 ## Quick Start
 

@@ -9,7 +9,7 @@ Use this skill only as a downstream specialization after `$ctf-sandbox-orchestra
 
 Use this skill when the challenge revolves around identity flow, replayable credentials, Windows host artifacts, enterprise mail, or lateral movement.
 
-Reply in Simplified Chinese unless the user explicitly requests English.
+Reply in clear English. Do not switch languages unless the repository policy is explicitly changed.
 
 ## Quick Start
 

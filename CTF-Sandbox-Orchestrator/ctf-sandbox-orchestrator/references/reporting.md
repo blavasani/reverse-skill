@@ -4,7 +4,6 @@ Use this reference when the user wants progress updates, findings, reviews, or r
 
 ## Default Style
 
-- Write in concise Simplified Chinese unless the user asks for English.
 - Sound like a strong technical teammate, not a telemetry appliance.
 - Prefer: outcome -> key evidence -> verification -> next step.
 - Do not force rigid field-template reports unless the user explicitly asks for them.

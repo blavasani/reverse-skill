@@ -9,24 +9,24 @@ Use this specialist workflow only after the master router and case scope gate ar
 
 # macOS / Mach-O Reverse Engineering
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 读取 `../field-journal/precedent-reverse.md`
-2. `NOW`: 确认目标为 macOS/Mach-O/App bundle（iOS IPA → `mobile-reverse/`）
-3. `NEXT`: tool-index；jtool2/lldb 等
-4. `ACT`: 签名与装载信息 → 静态 → 动态（lldb/Frida）
+1. `NOW`: Read `../field-journal/precedent-reverse.md`
+2. `NOW`: Confirm the target is a macOS/Mach-O/App bundle (iOS IPA → `mobile-reverse/`)
+3. `NEXT`: Read tool-index; use jtool2/lldb and related tools
+4. `ACT`: Signature and loading information → static → dynamic (lldb/Frida)
 
-## 适用场景
+## Applicable scenarios
 
-- Mach-O 可执行文件 / dylib / framework
-- .app bundle、LaunchAgent/Daemon
-- Objective-C / Swift 符号与 runtime
-- 公证/签名、Hardened Runtime、TCC 相关行为分析
-- macOS 恶意软件静态/动态分析（联合 malware-analysis）
+- Mach-O executables / dylibs / frameworks
+- .app bundles, LaunchAgents/Daemons
+- Objective-C / Swift symbols and runtime
+- Notarization/signing, Hardened Runtime, and TCC-related behavior analysis
+- Static/dynamic analysis of macOS malware (in conjunction with malware-analysis)
 
-## 工作流
+## Workflow
 
-### 1. 包体与签名
+### 1. Bundle and signing
 
 ```bash
 file target
@@ -35,7 +35,7 @@ spctl -a -vv target 2>&1
 otool -L target
 ```
 
-### 2. 静态
+### 2. Static analysis
 
 ```text
 □ class-dump / swift-demangle / Hopper / Ghidra / IDA
@@ -43,7 +43,7 @@ otool -L target
 □ LC_LOAD_dylib 依赖与 rpath
 ```
 
-### 3. 动态
+### 3. Dynamic analysis
 
 ```text
 □ lldb / Frida
@@ -51,28 +51,28 @@ otool -L target
 □ 网络：联合 protocol-reverse 或代理
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 |
+| Tool | Purpose |
 |------|------|
-| otool / nm / codesign | 系统自带 |
-| Hopper / Ghidra / IDA | 反编译 |
-| class-dump / dsdump | ObjC |
-| Frida / lldb | 动态 |
+| otool / nm / codesign | system-provided |
+| Hopper / Ghidra / IDA | decompilation |
+| class-dump / dsdump | Objective-C |
+| Frida / lldb | dynamic |
 | jtool2 | Mach-O |
 
-## 参考
+## References
 
 - `references/macho-triage.md`
-- `../mobile-reverse/`（iOS） `../ghidra-reverse/` `../malware-analysis/`
+- `../mobile-reverse/` (iOS) `../ghidra-reverse/` `../malware-analysis/`
 
-## 路由上下文
+## Routing context
 
-**上游**: MASTER R31  
-**下游**: iOS → mobile-reverse；通用样本 → malware-analysis
+**Upstream**: MASTER R31  
+**Downstream**: iOS → mobile-reverse; generic sample → malware-analysis
 
-## 任务完成自检
+## Completion self-check
 
-- [ ] 是否记录签名/Hardened Runtime 状态？
-- [ ] 是否有地址级/符号级结论？
-- [ ] Checklist？
+- [ ] Did you record signing/Hardened Runtime status?
+- [ ] Do you have address-level/symbol-level conclusions?
+- [ ] Checklist?

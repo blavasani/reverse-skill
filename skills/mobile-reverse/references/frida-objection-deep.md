@@ -1,8 +1,8 @@
-# Frida + Objection 深度用法
+# Frida + Objection Deep Usage
 
-## Frida 核心 API
+## Frida Core API
 
-### Java 运行时 (Android)
+### Java Runtime (Android)
 
 ```javascript
 Java.perform(function() {
@@ -37,7 +37,7 @@ Java.perform(function() {
 });
 ```
 
-### Native 层 (Android + iOS)
+### Native Layer (Android + iOS)
 
 ```javascript
 // Hook 导出函数
@@ -70,7 +70,7 @@ Interceptor.attach(Module.findExportByName(null, "strcmp"), {
 });
 ```
 
-### ObjC 运行时 (iOS)
+### ObjC Runtime (iOS)
 
 ```javascript
 // Hook ObjC 方法
@@ -92,9 +92,9 @@ var NSString = ObjC.classes.NSString;
 var str = NSString.stringWithString_("Hello from Frida");
 ```
 
-## Objection 命令速查
+## Objection Command Quick Reference
 
-### 通用
+### General
 
 ```bash
 objection -g "com.app" explore           # 启动
@@ -114,7 +114,7 @@ sqlite connect /path/to/db.sqlite
 select * from users;  # 查询
 ```
 
-### Android 专用
+### Android-specific
 
 ```bash
 android root disable              # 绕过 Root 检测
@@ -127,7 +127,7 @@ android heap search instances com.app.User  # 堆搜索
 android keystore list             # Keystore 条目
 ```
 
-### iOS 专用
+### iOS-specific
 
 ```bash
 ios jailbreak disable             # 绕过越狱检测
@@ -141,9 +141,9 @@ ios ui dump                       # UI 层次结构
 ios plist cat Info.plist          # 读取 plist
 ```
 
-## 免 Root/越狱部署
+## Deployment Without Root/Jailbreak
 
-### Android — Frida Gadget 注入
+### Android — Frida Gadget Injection
 
 ```bash
 # 1. 解包 APK
@@ -164,7 +164,7 @@ uber-apk-signer -a app_patched.apk
 objection patchapk --source app.apk --skip-resources
 ```
 
-### iOS — Frida Gadget 注入
+### iOS — Frida Gadget Injection
 
 ```bash
 # 1. 解密 App Store IPA
@@ -179,9 +179,9 @@ codesign -f -s "Apple Development" Payload/App.app
 # 4. 通过 Xcode sideload 或 AltStore 安装
 ```
 
-## SSL Pinning 绕过进阶
+## Advanced SSL Pinning Bypass
 
-### 多层绕过（Android）
+### Multi-layer bypass (Android)
 
 ```javascript
 // 1. OkHttp CertificatePinner
@@ -201,7 +201,7 @@ SslErrorHandler.proceed.implementation = function() { return this.proceed(); };
 // xml 中添加信任用户证书
 ```
 
-### 多层绕过（iOS）
+### Multi-layer bypass (iOS)
 
 ```javascript
 // 1. NSURLSession

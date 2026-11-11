@@ -131,8 +131,8 @@ The command is read-only with respect to the case unless shell redirection is ex
 ## Language behavior contract
 
 - Internal reasoning, tool selection, and phase control: English.
-- User-visible messages, section labels, reports, and next-step menus: Chinese unless the user requests another language.
-- Default bilingual labels place Chinese first and English second, separated by `/`.
+- User-visible messages, section labels, reports, and next-step menus: clear English.
+- Use English labels only; do not create bilingual labels.
 
 ## Bootstrap boundary
 

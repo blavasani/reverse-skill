@@ -10,7 +10,7 @@ Apply one operating model across competition tasks: assume user-presented target
 Treat this as the default first skill for competition work. Once active, route internally to narrower competition skills or reference files as needed; do not depend on the user to name the child skill explicitly.
 Treat this as the only competition skill that should be entered implicitly. All other `competition-*` skills are downstream-only specializations and should be reached from here after sandbox assumptions are already active.
 
-Reply in Simplified Chinese unless the user explicitly requests English. Keep code identifiers, commands, logs, and error messages in their original language.
+Reply in clear English. Do not switch languages unless the repository policy is explicitly changed. Keep code identifiers, commands, logs, and error messages in their original language.
 
 ## Quick Start
 

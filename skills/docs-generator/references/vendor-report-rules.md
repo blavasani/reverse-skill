@@ -1,71 +1,71 @@
-# Vendor Report Rules（专业厂商报告结构叠加层）
+# Vendor Report Rules (vendor-report structure overlay)
 
-> Issue #65 问题 2。  
-> **只抽结构与写法规则，禁止抄录任何厂商报告正文、图表、真实 IOC 实例或大段表述。**  
-> 本文件是**叠加层**：不替换 `security-report-templates.md` 的任务模板，也不削弱 §0 Evidence→Finding→Path。
+> Issue #65, item 2.
+> **Extract structure and writing rules only; do not reproduce vendor report text, charts, real IOC examples, or long passages.**
+> This file is an **overlay**: it does not replace the task templates in `security-report-templates.md` or weaken §0 Evidence→Finding→Path.
 
-结构参考（公开样例，仅骨架）：
+Structural references (public examples, outline only):
 
-| Flavor | 主参考 | 场景 |
-|--------|--------|------|
-| `malware` | 火绒安全病毒/技术分析报告 | 明确的普通木马、白加黑、钓鱼投毒、恶意样本 |
-| `apt` | 卡巴斯基 Securelist / APT 战役报告（如 MATA） | APT、团伙战役、多阶段感染链、行业定向 |
+| Flavor | Primary reference | Scenario |
+|--------|-------------------|----------|
+| `malware` | Huorong virus/technical analysis reports | Explicit commodity trojans, dual-use loaders, phishing delivery, malicious samples |
+| `apt` | Kaspersky Securelist / APT campaign reports (such as MATA) | APTs, group campaigns, multi-stage infection chains, industry targeting |
 
-原则：**模板在精不在多** —— 仅 2 个厂商全文 flavor（`malware` / `apt`）+ Base 通用元素 + **可选 thin overlay**（如 `vuln` 漏洞技术分析）。普通逆向、渗透、CTF 和 JS 报告保持任务模板，不默认伪装成恶意软件报告；`vuln` **不是** 第 3 个默认全文 flavor。
-
----
-
-## 0. 何时启用
-
-在 `docs-generator` 生成**安全类**报告时（逆向 / 恶意软件 / 渗透收尾 / 用户明确要求「专业报告」「厂商风格」）**MUST** 读取本文件。只有任务证据或用户明确要求支持时才选择厂商 flavor；否则使用 `flavor = null`，仅叠加通用专业元素和原任务模板。
-
-| 信号 | Flavor / Overlay |
-|------|------------------|
-| APT / 团伙 / 战役 / 多阶段 C2 / 行业定向 / ICS / spear-phish 战役 | `apt` |
-| 明确恶意样本、木马、窃密、白加黑、仿冒站点 | `malware` |
-| 用户明确要求漏洞/补丁/CVE 技术分析，或任务证据为 OS/组件漏洞研究 | `flavor = null` + **thin overlay `vuln`**（见 §3b） |
-| 普通 APK/ELF/PE/Mach-O 逆向、算法分析、固件分析、渗透测试、CTF、JS 签名 | `flavor = null`；使用原任务模板和通用专业元素最小集 |
-
-用户显式指定「按卡巴/APT」「按火绒/病毒报告」「按漏洞技术分析」时，覆盖自动选型。  
-**禁止** 把普通 malware/APT/普通逆向默认套进 `vuln` 目录。
+Principle: **Prefer precise templates over many templates** — only two full vendor flavors (`malware` / `apt`) plus Base common elements and an **optional thin overlay** (such as `vuln` technical vulnerability analysis). Ordinary reverse engineering, penetration testing, CTF, and JS reports retain their task templates and are not disguised as malware reports by default; `vuln` is **not** a third default full flavor.
 
 ---
 
-## 1. 通用专业元素（Base）
+## 0. When to enable
 
-下列 Base 元素按报告类型应用。标 **MUST** 的不可省略；与特定 flavor 相关的元素不得为了填模板而出现在无关任务中。没有适用内容时，使用 `n/a` 并说明原因。
+When `docs-generator` generates a **security** report (reverse engineering / malware / penetration-test closeout / an explicit request for a “professional report” or “vendor style”), it **MUST** read this file. Select a vendor flavor only when supported by task evidence or explicitly requested by the user; otherwise use `flavor = null` and add only the common professional elements to the original task template.
 
-| # | 元素 | 要求 |
-|---|------|------|
-| G1 | 执行摘要 / 概述 | **MUST**：3–8 句：分析了什么、最严重结论、影响面、建议动作 |
-| G2 | 范围与授权 | **MUST**：链到 case `scope.md`（见模板 §0.1） |
-| G3 | Evidence→Finding→Path | **MUST**：见 `security-report-templates.md` §0 与 `skills/ops/evidence-finding-path.md` |
-| G4 | IOC 表 | `malware` / `apt` **MUST**；其他任务仅在存在相关指标时出现 |
-| G5 | 建议 / 处置 | `malware` / `apt` **MUST**：至少 1 条可执行建议；其他任务按原任务模板 |
-| G6 | 附录元数据 | **SHOULD**：工具与版本、样本哈希、完整复现命令 |
-| G7 | ATT&CK 映射 | **MUST**（`apt` 下；无适用技术时 `n/a` + 原因）；其他任务 **SHOULD** |
+| Signal | Flavor / Overlay |
+|--------|------------------|
+| APT / group / campaign / multi-stage C2 / industry targeting / ICS / spear-phishing campaign | `apt` |
+| Explicit malicious sample, trojan, information stealer, dual-use loader, impersonation site | `malware` |
+| User explicitly requests vulnerability/patch/CVE technical analysis, or task evidence concerns OS/component vulnerability research | `flavor = null` + **thin overlay `vuln`** (see §3b) |
+| Ordinary APK/ELF/PE/Mach-O reverse engineering, algorithm analysis, firmware analysis, penetration testing, CTF, JS signatures | `flavor = null`; use the original task template and the minimum common professional elements |
 
-### 1.1 IOC 表最小列
+An explicit user request for “Kaspersky/APT style,” “Huorong/virus-report style,” or “technical vulnerability analysis” overrides automatic selection.
+**Do not** place ordinary malware/APT or ordinary reverse engineering into the `vuln` outline by default.
+
+---
+
+## 1. Common professional elements (Base)
+
+Apply the following Base elements by report type. Items marked **MUST** cannot be omitted; elements tied to a specific flavor must not appear in unrelated tasks merely to fill the template. When no content applies, use `n/a` and explain why.
+
+| # | Element | Requirement |
+|---|---------|-------------|
+| G1 | Executive summary / overview | **MUST**: 3–8 sentences covering what was analyzed, the most severe conclusion, impact, and recommended action |
+| G2 | Scope and authorization | **MUST**: link to the case `scope.md` (see template §0.1) |
+| G3 | Evidence→Finding→Path | **MUST**: see §0 of `security-report-templates.md` and `skills/ops/evidence-finding-path.md` |
+| G4 | IOC table | **MUST** for `malware` / `apt`; include for other tasks only when relevant indicators exist |
+| G5 | Recommendations / response | **MUST** for `malware` / `apt`: at least one actionable recommendation; follow the original task template for other tasks |
+| G6 | Appendix metadata | **SHOULD**: tools and versions, sample hashes, complete reproduction commands |
+| G7 | ATT&CK mapping | **MUST** under `apt` (use `n/a` plus a reason when no technique applies); **SHOULD** for other tasks |
+
+### 1.1 Minimum IOC table columns
 
 ```markdown
-| 类型 | 值 | 上下文 | 首次/最后发现 | 来源证据 | 置信度 |
-|------|----|--------|---------------|----------|--------|
-| file_sha256 / file_md5 / domain / ip:port / url / mutex / path / registry | … | 何处发现 | YYYY-MM-DD / n/a | E-id | high/med/low |
+| Type | Value | Context | First/last seen | Source evidence | Confidence |
+|------|-------|---------|-----------------|-----------------|------------|
+| file_sha256 / file_md5 / domain / ip:port / url / mutex / path / registry | … | Where found | YYYY-MM-DD / n/a | E-id | high/med/low |
 ```
 
-### 1.2 版权与安全边界
+### 1.2 Copyright and security boundaries
 
-- 不得粘贴厂商 PDF/网页正文段落或图注充作己方分析。
-- 真实 token、内网 URL、客户标识用占位符。
-- 未授权目标不得输出可直接利用的攻击步骤细节（遵循 case scope / RULES）。
+- Do not paste vendor PDF/webpage paragraphs or figure captions as if they were your own analysis.
+- Use placeholders for real tokens, internal URLs, and customer identifiers.
+- Do not output directly exploitable attack-step details for unauthorized targets (follow the case scope / RULES).
 
 ---
 
-## 2. Flavor：`malware`（火绒式 · 明确选择）
+## 2. Flavor: `malware` (Huorong style · explicit selection)
 
-**叙事目标**：让读者 5 分钟内看懂「是什么 → 怎么来的 → 样本怎么干的 → 怎么处置 → 有哪些 IOC」。
+**Narrative goal**: Let readers understand within five minutes “what it is → how it arrived → what the sample did → how to respond → which IOCs exist.”
 
-### 2.1 推荐章节顺序
+### 2.1 Recommended section order
 
 ```markdown
 # [标题：一句话威胁定性]
@@ -102,19 +102,19 @@
 （工具版本、复现命令、脚本路径）
 ```
 
-### 2.2 文风
+### 2.2 Style
 
-- 中文用户默认中文；先结论后细节。
-- 静态分析按「组件/阶段」分层，避免无结构的长日志粘贴。
-- 处置步骤必须可独立执行，禁止「加强安全意识」空话充数。
+- Lead with conclusions, then provide details.
+- Organize static analysis by “component/stage” and avoid pasting long, unstructured logs.
+- Response steps must be independently executable; do not pad them with empty “raise security awareness” statements.
 
 ---
 
-## 3. Flavor：`apt`（卡巴斯基 Securelist 式）
+## 3. Flavor: `apt` (Kaspersky Securelist style)
 
-**叙事目标**：讲清战役级故事——谁在何时用何链打了谁，调查如何推进，组件如何分工，防守方拿什么去检。
+**Narrative goal**: Tell the campaign-level story clearly—who used which chain against whom and when, how the investigation progressed, how components were divided, and what defenders can use to detect it.
 
-### 3.1 推荐章节顺序
+### 3.1 Recommended section order
 
 ```markdown
 # [战役/集群名称]：[一句话影响]
@@ -154,23 +154,23 @@
 （样本列表与哈希、工具版本、参考公开编号；不抄外部报告正文）
 ```
 
-### 3.2 文风
+### 3.2 Style
 
-- 时间线与「可见性限制」要诚实写。
-- Interesting findings ≠ 重复概述；写调查中真正关键的异常点。
-- 组件分析用表：角色 / 持久化 / C2 / 依赖，再展开。
+- Describe the timeline and “visibility limitations” honestly.
+- Interesting findings ≠ a repeated overview; write the genuinely important anomalies found during the investigation.
+- Use a table for component analysis: role / persistence / C2 / dependencies, then expand on it.
 
 ---
 
 
-## 3b. Thin overlay：`vuln`（漏洞技术分析 · 可选）
+## 3b. Thin overlay: `vuln` (technical vulnerability analysis · optional)
 
-> Issue #65 补充。结构参考公开「操作系统/组件漏洞技术分析」类报告目录，**只抽章节骨架**，禁止抄录截图/正文中的 PoC 报文、利用细节或未授权攻击步骤。  
-> **不是** 第 3 个默认厂商全文 flavor；仅在漏洞研究任务或用户明确要求时叠加。
+> Issue #65 supplement. The structure references public technical-analysis report outlines for operating-system/component vulnerabilities; **extract section skeletons only** and do not reproduce PoC messages, exploitation details, or unauthorized attack steps from screenshots or report text.
+> **Not** a third default full vendor flavor; add it only for vulnerability-research tasks or when explicitly requested.
 
-**叙事目标**：读者能快速看到「影响谁 → 如何确认/复现（授权内）→ 根因与补丁差异 → 如何缓解」。
+**Narrative goal**: Let readers quickly see “who is affected → how to confirm/reproduce (within authorization) → root cause and patch differences → how to mitigate.”
 
-### 建议章节顺序
+### Recommended section order
 
 ```markdown
 ## 1. 漏洞概述
@@ -189,30 +189,30 @@
 ## 4. Evidence → Finding → Path（可并入各节或独立表）
 ```
 
-### 硬约束
+### Hard constraints
 
-- **MUST** scope/授权：未授权目标禁止复现与 PoC 扩展
-- **MUST** E/F/P：复现、崩溃、补丁结论均挂 evidence_ids
-- **MUST NOT** 把 `vuln` 当作 malware/APT 默认壳
-- **MUST NOT** 抄录外部报告/截图中的利用代码或完整攻击武器化步骤
-- IOC 表：仅当存在网络/文件指示器时出现；否则 n/a 或省略
-
----
-## 4. 与现有任务模板的挂接
-
-| 任务模板（`security-report-templates.md`） | 叠加方式 |
-|------------------------------------------|----------|
-| 1. 逆向工程报告 | 默认 `flavor = null`，保留原「静态/动态/复现」骨架和导入表等硬门 Evidence；只有明确恶意样本才套 §2 |
-| 2. 渗透测试报告 | `flavor = null`；补 Base 中适用的 G1–G3，攻击路径对齐 §0 Path，不强制 IOC |
-| 3. CTF Writeup | `flavor = null`；保留原题目、解题思路和复现结构，不强制 IOC/ATT&CK |
-| 4. JS/Web 签名逆向 | `flavor = null`；使用原概述 → 定位 → 算法 → 复现骨架，不套 malware |
-| 恶意软件 / APT 专项 | 显式选 `malware` 或 `apt` 全文骨架 |
-
-**冲突解决**：§0 Evidence 链字段与 scope 门禁 **永远优先**；flavor 只改叙事顺序与专业外壳，不得删除 E/F/P。
+- **MUST** enforce scope/authorization: reproduction and PoC expansion are prohibited for unauthorized targets.
+- **MUST** enforce E/F/P: reproduction, crash, and patch conclusions all carry `evidence_ids`.
+- **MUST NOT** treat `vuln` as the default malware/APT shell.
+- **MUST NOT** reproduce exploit code or complete weaponized attack steps from external reports/screenshots.
+- IOC table: include it only when network/file indicators exist; otherwise use `n/a` or omit it.
 
 ---
+## 4. Integration with existing task templates
 
-## 5. 选型伪代码
+| Task template (`security-report-templates.md`) | Overlay behavior |
+|-----------------------------------------------|------------------|
+| 1. Reverse engineering report | Default `flavor = null`; retain the original “static/dynamic/reproduction” outline and hard-gate Evidence such as the imports table; use §2 only for an explicit malicious sample |
+| 2. Penetration-test report | `flavor = null`; add applicable G1–G3 from Base, align the attack path with §0 Path, and do not require IOCs |
+| 3. CTF writeup | `flavor = null`; retain the original challenge, solution approach, and reproduction structure; do not require IOC/ATT&CK |
+| 4. JS/Web signature reverse engineering | `flavor = null`; use the original overview → localization → algorithm → reproduction outline, not malware |
+| Malware / APT specialization | Explicitly select the `malware` or `apt` full outline |
+
+**Conflict resolution**: §0 Evidence-chain fields and scope gates **always take precedence**; a flavor changes only narrative order and professional framing and must not remove E/F/P.
+
+---
+
+## 5. Selection pseudocode
 
 ```
 if user_requests_kaspersky or apt or threat_campaign:
@@ -233,31 +233,31 @@ elif overlay == vuln:
 
 ---
 
-## 6. 完成检查清单（写报告末自检）
+## 6. Completion checklist (self-check at the end of the report)
 
-- [ ] 已选 flavor 或显式「任务模板 + 最小集」
-- [ ] G1 概述存在且非空话
-- [ ] §0 E/F/P 字段完整
-- [ ] `malware` / `apt` 报告有 IOC 表（或 n/a+原因）
-- [ ] `malware` / `apt` 报告有可执行建议/处置
-- [ ] 无 flavor 的任务没有被套入 malware/APT 专属章节
-- [ ] uln 仅在漏洞任务启用；含概述/分析/防护骨架与 E/F/P；无未授权 PoC 武器化
-- [ ] 无厂商原文粘贴、无 placeholder/TODO
-- [ ] 导入表等硬门 Evidence 已进入静态/技术分析（若本任务做过二进制分析）
-
----
-
-## 7. 来源登记
-
-- Kaspersky Securelist, “Updated MATA attacks industrial companies in Eastern Europe”: <https://securelist.com/updated-mata-attacks-industrial-companies-in-eastern-europe/110829>（结构参考；访问日期：2026-08-11）
-- 火绒安全公开技术文章入口：<https://www.huorong.cn/>（站点入口；访问日期：2026-08-11。具体文章 URL、标题和访问日期应在实际引用时登记）
-- ATT&CK 技术编号仅作为规范化映射，必须由本次 Evidence 支撑；不得把外部报告中的 IOC 自动带入当前报告。
+- [ ] A flavor or explicit “task template + minimum set” is selected
+- [ ] G1 overview exists and is substantive
+- [ ] §0 E/F/P fields are complete
+- [ ] `malware` / `apt` reports include an IOC table (or `n/a` plus a reason)
+- [ ] `malware` / `apt` reports include actionable recommendations/response steps
+- [ ] Tasks without a flavor are not placed into malware/APT-specific sections
+- [ ] `vuln` is enabled only for vulnerability tasks; it includes overview/analysis/mitigation skeletons and E/F/P, with no unauthorized PoC weaponization
+- [ ] No vendor-text pasting and no placeholder/TODO
+- [ ] Hard-gate Evidence such as the imports table is included in static/technical analysis when binary analysis was performed
 
 ---
 
-## 8. 非目标
+## 7. Source register
 
-- 不维护 Mandiant/CrowdStrike/奇安信等额外全文模板（结构已由双 flavor + 可选 thin overlay 覆盖常见需求）。
-- 不把 `vuln` 升级为与 malware/apt 并列的默认全文 flavor。
-- 不自动爬取厂商站点填报告。
-- 不因 flavor 降低 Evidence 契约或授权范围。
+- Kaspersky Securelist, “Updated MATA attacks industrial companies in Eastern Europe”: <https://securelist.com/updated-mata-attacks-industrial-companies-in-eastern-europe/110829> (structural reference; accessed 2026-08-11)
+- Huorong public technical-article entry point: <https://www.huorong.cn/> (site entry point; accessed 2026-08-11. Record the specific article URL, title, and access date when actually citing it)
+- ATT&CK technique IDs are only normalized mappings and must be supported by the current Evidence; do not automatically import IOCs from external reports into the current report.
+
+---
+
+## 8. Non-goals
+
+- Do not maintain additional full templates for Mandiant/CrowdStrike/Qianxin or similar vendors (the two flavors plus optional thin overlay cover common needs).
+- Do not promote `vuln` to a default full flavor parallel to malware/apt.
+- Do not crawl vendor sites automatically to populate reports.
+- Do not reduce the Evidence contract or authorization scope because of a flavor.
