@@ -55,7 +55,7 @@ EDRs almost always hook these `ntdll.dll` exports, grouped by ATT&CK behavior:
 | `NtCreateThreadEx` | Remote-thread injection, QueueUserAPC injection | T1055.002 / T1055.004 |
 | `NtAllocateVirtualMemory` | Allocate RWX memory for shellcode | T1055 |
 | `NtAllocateVirtualMemoryEx` | Cross-process memory allocation (new API on Win10+) | T1055 |
-| `NtProtectVirtualMemory` | Change page permissions RW→RX | T1055 |
+| `NtProtectVirtualMemory` | Change page permissions RWRX | T1055 |
 | `NtWriteVirtualMemory` | Write shellcode across processes | T1055.012 |
 | `NtMapViewOfSection` | Section-based injection (Process Doppelganging / Ghosting) | T1055.013 |
 | `NtCreateSection` | Used with MapViewOfSection | T1055.013 |
@@ -124,14 +124,14 @@ Alternatively, use tools such as PChunter / DRVHV to visualize the callback list
 ```text
 1. Find a process containing an injected EDR user-mode component (any live process).
 2. Attach WinDbg (`-pn target.exe`).
-3. `lm m ntdll` → obtain the module base address.
+3. `lm m ntdll`  obtain the module base address.
 4. `.writemem c:\temp\ntdll_live.bin ntdll+0x0 L?<image size>`
 5. Copy `C:\Windows\System32\ntdll.dll` to `c:\temp\ntdll_disk.dll`.
 6. Load both files in IDA and navigate to `NtAllocateVirtualMemory`:
      - disk: standard prologue
      - live: first instruction is `jmp <0x7FFE000000xx>`
-7. Follow the jump target → it is the EDR trampoline; dump it.
-8. Inspect the trampoline’s final DLL target to identify the EDR module.
+7. Follow the jump target  it is the EDR trampoline; dump it.
+8. Inspect the trampolines final DLL target to identify the EDR module.
 ```
 
 ### Procedure B: Batch hook-table generation
@@ -184,43 +184,43 @@ In practice, `pe-sieve` is often compiled as a library (`libpe-sieve`) so the im
 API Monitor v2 (Rohitab) is suitable for observing when and where an EDR inserts hooks in a lab:
 
 ```text
-1. 启动 API Monitor v2（管理员）
-2. API Filter 勾选：
-     - NT Native API → Memory Management
-     - NT Native API → Process and Thread
-     - Windows Defender / AMSI（如果可见）
-3. Monitor New Process → 选择 implant 测试样本
-4. 观察：
-     - NtAllocateVirtualMemory 调用顺序
-     - 是否被 EDR DLL 中转
-5. 在 Modules tab 看哪些 EDR DLL 被 LoadLibrary 注入
+1. Start API Monitor v2 (as administrator).
+2. Select these API filters:
+     - NT Native API  Memory Management
+     - NT Native API  Process and Thread
+     - Windows Defender / AMSI (if visible)
+3. Monitor New Process  select the implant test sample.
+4. Observe:
+     - NtAllocateVirtualMemory call order
+     - Whether calls are relayed through an EDR DLL
+5. In the Modules tab, see which EDR DLLs were injected through LoadLibrary.
 ```
 
-## 7. 常见 EDR DLL（用户态）速查
+## 7. Common EDR DLLs (User Mode)
 
-| DLL | 厂商 | 备注 |
+| DLL | Vendor | Notes |
 |-----|------|------|
 | `umppc*.dll` | Microsoft Defender | MpClient userland |
 | `mpoav.dll` | Microsoft Defender | AMSI provider |
 | `aswAMSI.dll` | Avast | AMSI provider |
 | `eamsi.dll` | ESET | AMSI provider |
-| `IDPMServiceClient.dll` | Sophos | HMPA 注入 |
-| `klsihk64.dll` | Kaspersky | 注入到目标进程 |
-| `CrowdStrike.Sensor.dll` | CrowdStrike | 旧版本，新版主要靠内核 |
-| `SentinelInjection64.dll` | SentinelOne | 用户态注入 |
-| `TmUmEvt64.dll` | Trend Micro | 行为监控 |
+| `IDPMServiceClient.dll` | Sophos | HMPA injection |
+| `klsihk64.dll` | Kaspersky | Injected into target processes |
+| `CrowdStrike.Sensor.dll` | CrowdStrike | Older versions; newer versions rely mainly on the kernel |
+| `SentinelInjection64.dll` | SentinelOne | User-mode injection |
+| `TmUmEvt64.dll` | Trend Micro | Behavioral monitoring |
 
-确认目标 EDR 后，再决定逆向哪个 DLL 取 hook 表。
+After confirming the target EDR, decide which DLL to reverse engineer for its hook table.
 
-## 参考链接
+## References
 
-- pe-sieve：<https://github.com/hasherezade/pe-sieve>
-- HollowsHunter：<https://github.com/hasherezade/hollows_hunter>
-- API Monitor v2：<http://www.rohitab.com/apimonitor>
-- MITRE ATT&CK T1562：<https://attack.mitre.org/techniques/T1562/>
-- MITRE ATT&CK T1055：<https://attack.mitre.org/techniques/T1055/>
-- ired.team EDR notes：<https://www.ired.team/offensive-security/defense-evasion>
+- pe-sieve<https://github.com/hasherezade/pe-sieve>
+- HollowsHunter<https://github.com/hasherezade/hollows_hunter>
+- API Monitor v2<http://www.rohitab.com/apimonitor>
+- MITRE ATT&CK T1562<https://attack.mitre.org/techniques/T1562/>
+- MITRE ATT&CK T1055<https://attack.mitre.org/techniques/T1055/>
+- ired.team EDR notes<https://www.ired.team/offensive-security/defense-evasion>
 
-## 路由回调
+## Routing Callback
 
-完成 hook 调研后，回到 `SKILL.md` 的 Step 3 选择绕过技术组合，然后按 `references/unhook-techniques.md` 与 `references/telemetry-blinding.md` 执行。
+After completing the hook survey, return to Step 3 in `SKILL.md` to select an evasion combination, then follow `references/unhook-techniques.md` and `references/telemetry-blinding.md`.
