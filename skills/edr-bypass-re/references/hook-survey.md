@@ -18,7 +18,7 @@ This document summarizes monitoring points used by major EDR / AV products in us
 | Trend Micro Apex One | `TmListen.exe`, `TmCCSF.dll` | `tmcomm.sys`, `tmactmon.sys` | User-mode hooks + behavioral monitoring drivers |
 | Carbon Black | `RepMgr.exe`, `RepWAV.exe` | `ParityDriver.sys` | Kernel-focused callbacks + ETW |
 
-### 快速指纹脚本
+### Quick Fingerprinting Script
 
 ```powershell
 $edrSigs = @{
@@ -68,7 +68,7 @@ EDRs almost always hook these `ntdll.dll` exports, grouped by ATT&CK behavior:
 | `NtAdjustPrivilegesToken` | Elevate privileges to obtain SeDebugPrivilege, etc. | T1134 |
 | `NtLoadDriver` | Load a kernel driver (BYOVD) | T1543.003 |
 
-### 验证 hook 是否存在
+### Verify Whether Hooks Are Present
 
 ```powershell
 # Simple: disassemble-diff the disk ntdll against the current process ntdll
@@ -104,7 +104,7 @@ Common kernel callbacks registered by EDRs (all can be unregistered through the 
 | `KeRegisterNmiCallback` | NMI (rarely used by EDRs) | Anomaly monitoring |
 | `EtwRegister` (kernel side) | Kernel ETW reporting | Works with ETW-TI |
 
-### 用 windbg 枚举已注册 callback
+### Enumerate registered callbacks with WinDbg
 
 ```text
 0: kd> dx -r1 nt!PspCreateProcessNotifyRoutine
@@ -115,73 +115,73 @@ Common kernel callbacks registered by EDRs (all can be unregistered through the 
 0: kd> !object \Callback\ProcessObject
 ```
 
-或用 PChunter / DRVHV 这类工具，普通用户可视化看 callback 列表。
+Alternatively, use tools such as PChunter / DRVHV to visualize the callback list.
 
-## 4. 静态 dump hook 表（IDA + windbg 流程）
+## 4. Static Hook-Table Dump (IDA + WinDbg)
 
-### 流程 A：单进程比对
+### Procedure A: Single-process comparison
 
 ```text
-1. 找一个已被 EDR 注入用户态组件的进程（任意已存活进程）
-2. windbg attach (-pn target.exe)
-3. lm m ntdll  → 拿到模块基址
-4. .writemem c:\temp\ntdll_live.bin ntdll+0x0 L?<image size>
-5. 把 C:\Windows\System32\ntdll.dll 复制为 c:\temp\ntdll_disk.dll
-6. 在 IDA 里加载两个文件，跳到 NtAllocateVirtualMemory：
-     - disk：标准 prologue
-     - live：第一条 jmp <0x7FFE000000xx>
-7. 跟着 jmp 目标地址 → 那就是 EDR 的 trampoline，dump 出来
-8. 进 trampoline 看它最终落到哪个 DLL，确认 EDR 模块名
+1. Find a process containing an injected EDR user-mode component (any live process).
+2. Attach WinDbg (`-pn target.exe`).
+3. `lm m ntdll` → obtain the module base address.
+4. `.writemem c:\temp\ntdll_live.bin ntdll+0x0 L?<image size>`
+5. Copy `C:\Windows\System32\ntdll.dll` to `c:\temp\ntdll_disk.dll`.
+6. Load both files in IDA and navigate to `NtAllocateVirtualMemory`:
+     - disk: standard prologue
+     - live: first instruction is `jmp <0x7FFE000000xx>`
+7. Follow the jump target → it is the EDR trampoline; dump it.
+8. Inspect the trampoline’s final DLL target to identify the EDR module.
 ```
 
-### 流程 B：批量 hook 表生成
+### Procedure B: Batch hook-table generation
 
-用 `HookHunter` 或自写脚本：
+Use `HookHunter` or a custom script:
 
 ```powershell
-# pseudo workflow，详见 references 提到的脚本
+# Pseudo workflow; see the script referenced in the references
 $disk = Get-Content C:\Windows\System32\ntdll.dll -Encoding Byte
-$live = # 通过 OpenProcess + ReadProcessMemory 拿
-# 对比 .text 段每个 export 的前 16 字节
+$live = # obtain through OpenProcess + ReadProcessMemory
+# Compare the first 16 bytes of each export in the .text section
 ```
 
-## 5. pe-sieve 自动检测
+## 5. Automated pe-sieve Detection
 
-`pe-sieve` 是侦察 EDR hook 与 implant 自检的首选：
+`pe-sieve` is the preferred tool for surveying EDR hooks and self-checking the implant:
 
 ```powershell
-# 基本扫描
+# Basic scan
 pe-sieve64.exe /pid 1234
 
-# 推荐组合（含 shellcode 与 hook 检测）
+# Recommended combination (including shellcode and hook detection)
 pe-sieve64.exe /pid 1234 /shellc 3 /modules 3 /imp 3 /data 3 /dir hooks_dump
 
-# 关键参数：
-#   /shellc N    shellcode 扫描等级 (0-3)
-#   /modules N   模块完整性检查 (0-3)
-#   /imp N       IAT hook 检查
-#   /data N      数据段扫描
-#   /dir <path>  dump 输出目录
+# Key parameters:
+#   /shellc N    shellcode scan level (0-3)
+#   /modules N   module integrity check (0-3)
+#   /imp N       IAT hook check
+#   /data N      data-section scan
+#   /dir <path>  dump output directory
 ```
 
-输出会在 `hooks_dump/<pid>.<name>/` 下产生 `*.tag` 文件，列出 hook 地址：
+Output creates `*.tag` files under `hooks_dump/<pid>.<name>/` listing hook addresses:
 
 ```text
-modified_modules.tag 示例：
+modified_modules.tag example:
 71f10000;ntdll.dll
 71f1a3b0;hook;jmp_far
 71f1c020;hook;jmp_near
 ```
 
-可直接喂给 IDA 跳到对应 RVA 做后续分析。
+Feed the output directly to IDA, jump to the corresponding RVA, and continue analysis.
 
-### 在 implant 中嵌入 pe-sieve（自检）
+### Embed pe-sieve in the Implant (Self-Check)
 
-实战中常把 `pe-sieve` 编译为 lib (`libpe-sieve`)，让 implant 启动时先自检：如果 ntdll 有 hook，就触发 unhook 流程；如果发现自己被 hook 反而要小心，可能在沙箱里。
+In practice, `pe-sieve` is often compiled as a library (`libpe-sieve`) so the implant self-checks at startup: if ntdll has a hook, trigger the unhook flow; if the implant itself is hooked, be cautious because it may be running in a sandbox.
 
-## 6. API Monitor v2 动态观察
+## 6. Dynamic Observation with API Monitor v2
 
-API Monitor v2（Rohitab）适合在 lab 里看 EDR 在何时何处插入 hook：
+API Monitor v2 (Rohitab) is suitable for observing when and where an EDR inserts hooks in a lab:
 
 ```text
 1. 启动 API Monitor v2（管理员）
