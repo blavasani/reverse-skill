@@ -26,7 +26,7 @@ Output: `build/libs/burp-mcp-full.jar`.
 ### 2. Load into Burp
 
 ```
-Burp Suite â†’ Extensions â†’ Add â†’ Java â†’ select build/libs/burp-mcp-full.jar
+Burp Suite → Extensions → Add → Java → select `build/libs/burp-mcp-full.jar`
 ```
 
 After loading, Output should show:
@@ -53,7 +53,7 @@ Add the following to any MCP client (Claude Code / Kiro / Cursor / Cline / Winds
   "mcpServers": {
     "burpsuite": {
       "command": "node",
-      "args": ["<æœ¬ç›®å½•è·¯å¾„>/mcp-bridge.js"]
+      "args": ["<repository-root>/mcp-bridge.js"]
     }
   }
 }
@@ -174,8 +174,8 @@ The ports on both sides must match. If Burp is not running or the port is unreac
 
 ```bash
 cd burp-mcp-full
-gradle jar      # éœ€æœ¬æœºå·²è£… Gradle 9.9.1+
-# è¾“å‡º: build/libs/burp-mcp-full.jar
+gradle jar      # Requires Gradle 8.7 or newer
+# Output: build/libs/burp-mcp-full.jar
 ```
 
 > `build.bat` / `build.sh` is recommended (zero dependencies; downloads the JAR automatically). The Gradle path is provided only as an alternative.

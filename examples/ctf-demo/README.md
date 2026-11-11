@@ -6,11 +6,11 @@
 ## Workflow Demonstration
 
 ```text
-1. User task: "Analyze this CTF pwn challenge, gets stack overflow"
-2. Routing: master-route.ps1 -Hint "CTF pwn stack overflow" → PRIMARY R17 (pwn-chain)
-3. Authorization: case-init.ps1 -Hint ... -CaseName ctf-demo -AuthGranted → scope.md
-4. Execution: append to the timeline + evidence E-001/E-002 + update workitems
-5. Deliverables: report (docs-generator) + sanitized field-journal entry
+1. User task: "Analyze this CTF pwn challenge; it has a stack overflow."
+2. Routing: `master-route.ps1 -Hint "CTF pwn stack overflow"` → PRIMARY R17 (`pwn-chain`)
+3. Authorization: `case-init.ps1 -Hint ... -CaseName ctf-demo -AuthGranted` → `scope.md`
+4. Execution: append to the timeline, record evidence `E-001` and `E-002`, and update work items
+5. Deliverables: a report from `docs-generator` and a sanitized field-journal entry
 ```
 
 ## Files
