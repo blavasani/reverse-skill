@@ -1,12 +1,12 @@
-# Cybersecurity Skills Router — Kali Linux 专供版
+# Cybersecurity Skills Router — Kali Linux Edition
 
-> 本目录是 Kali Linux 2026.1 优化适配层。基于 2026 年 3 月发布的 Kali 2026.1（内核 6.18）进行专项优化。
-> 核心知识库（skills/、CTF-Sandbox-Orchestrator/）与 Windows 版共享；Kali 专属 README 和 Bash 入口需要覆盖 Windows 核心能力名，同时额外提供 Kali 原生工具/MCP 能力。  
-> 根目录 [README-kali.md](../README-kali.md) 仅为短跳转，**以本文件为准**。
+> This directory is the optimized Kali Linux 2026.1 adaptation layer. It is specifically optimized for Kali 2026.1, released in March 2026 (kernel 6.18).
+> The core knowledge base (`skills/`, `CTF-Sandbox-Orchestrator/`) is shared with the Windows edition. The Kali-specific README and Bash entry points cover the Windows core capability names and additionally provide native Kali tool/MCP capabilities.  
+> The root [README-kali.md](../README-kali.md) is only a short redirect; **this file is authoritative**.
 
 ---
 
-## AI：读完后立即执行
+## AI: Execute Immediately After Reading
 
 ```text
 1. 检测包根目录（含 skills/ 与 kali/ 的仓库根）
@@ -20,11 +20,11 @@
 5. 向用户报告配置结果
 ```
 
-通用 Agent 引导见仓库根 [README_AI.md](../README_AI.md)（检测到 Kali 时再读本文件）。
+For general Agent guidance, see the repository root [README_AI.md](../README_AI.md) (read this file when Kali is detected).
 
 ---
 
-## 0. 与 Windows 版的关系（能力名对齐）
+## 0. Relationship to the Windows Edition (Capability Alignment)
 
 ```text
 项目根目录/
@@ -44,103 +44,103 @@
 ```
 
 
-### 0.1 对齐原则
+### 0.1 Alignment Principles
 
-Kali 专属入口不是 Windows README 的简单复制，而是 **同一套核心能力名 + Kali 额外能力**：
+The Kali-specific entry point is not a simple copy of the Windows README; it is **the same set of core capability names plus additional Kali capabilities**:
 
 - Windows：`skills/scripts/bootstrap-reverse.ps1`
 - Kali：`kali/scripts/bootstrap-reverse.sh`
-- 普通 Linux/macOS：`skills/scripts/bootstrap-reverse.sh`
+- Standard Linux/macOS: `skills/scripts/bootstrap-reverse.sh`
 
-JEB Pro 是用户自行许可和安装的商业工具；Reqable MCP 使用官方固定版本的 `reqable-mcp-server`，但仍要求单独安装 Reqable 桌面客户端。
+JEB Pro is a commercial tool that users must license and install themselves. Reqable MCP uses the official pinned version of `reqable-mcp-server`, but still requires the separate Reqable desktop client.
 
-Kali 脚本应覆盖 Windows manifest 中的核心能力名，例如 `jadx`、`apktool`、`frida`、`jshookmcp`、`xquik-mcp`、`anything-analyzer`、`idapro`、`r2`、`adb`、`ghidra-mcp`、`seclists`、`burpsuite-mcp`、`nmap`、`pentestswarm`；同时可以额外支持 Kali 原生工具，例如 `mcp-kali-server`、`metasploitmcp`、`hexstrike-ai`、`sstimap`、`xsstrike`、`netexec` 等。
+Kali scripts should cover the core capability names in the Windows manifest, such as `jadx`, `apktool`, `frida`, `jshookmcp`, `xquik-mcp`, `anything-analyzer`, `idapro`, `r2`, `adb`, `ghidra-mcp`, `seclists`, `burpsuite-mcp`, `nmap`, and `pentestswarm`; they may additionally support native Kali tools such as `mcp-kali-server`, `metasploitmcp`, `hexstrike-ai`, `sstimap`, `xsstrike`, and `netexec`.
 
-**共享的部分**（不需要改动）：
-- 所有 `SKILL.md`、`routing.md`、`MASTER-ROUTING.md`
-- `skills/ops/` 作战契约（scope / 证据链 / 角色 / 时间线）
-- 所有 `references/` 知识库
-- `field-journal/` 自进化机制
-- `CTF-Sandbox-Orchestrator/` 全部
+**Shared components** (no changes needed):
+- All `SKILL.md`, `routing.md`, and `MASTER-ROUTING.md` files
+- `skills/ops/` operational contract (scope / evidence chain / roles / timeline)
+- All `references/` knowledge base content
+- `field-journal/` self-evolution mechanism
+- Everything in `CTF-Sandbox-Orchestrator/`
 - `docs-generator/`、`diagram-generator/`
-- `skills/scripts/case-init.ps1`、`master-route.ps1`（可用 pwsh 调用）
+- `skills/scripts/case-init.ps1`, `master-route.ps1` (can be invoked with pwsh)
 
-**Kali 专属的部分**：
-- 脚本全部是 bash（`.sh`）
-- 包管理走 `apt`
-- 路径约定为 Linux 风格（`/opt/`、`~/tools/`、`/usr/bin/`）
-- 大量工具 Kali 预装，bootstrap 逻辑大幅简化
+**Kali-specific components**:
+- All scripts are Bash (`.sh`)
+- Package management uses `apt`
+- Paths follow Linux conventions (`/opt/`, `~/tools/`, `/usr/bin/`)
+- Many tools are preinstalled on Kali, greatly simplifying bootstrap logic
 
 ---
 
-## 1. Kali 的天然优势
+## 1. Kali Native Advantages
 
-以下工具在 Kali 2026.1 中**开箱即用**（无需 bootstrap）：
+The following tools are **ready to use out of the box** on Kali 2026.1 (no bootstrap required):
 
-### 经典预装工具
+### Classic Preinstalled Tools
 
-| 工具 | Kali 包名 | 状态 |
+| Tool | Kali Package | Status |
 |------|----------|------|
-| nmap | nmap | 预装 |
-| sqlmap | sqlmap | 预装 |
-| hashcat | hashcat | 预装 |
-| john | john | 预装 |
-| hydra | hydra | 预装 |
-| metasploit | metasploit-framework | 预装 |
-| gobuster | gobuster | 预装 |
-| ffuf | ffuf | 预装 |
-| radare2 | radare2 | 预装 |
-| binwalk | binwalk | 预装 |
-| frida | python3-frida-tools | 预装或 pip |
-| burpsuite | burpsuite | 预装 |
-| wireshark | wireshark | 预装 |
-| nikto | nikto | 预装 |
-| wfuzz | wfuzz | 预装 |
-| impacket | impacket-scripts | 预装 |
-| netexec | netexec | 预装 |
-| responder | responder | 预装 |
-| aircrack-ng | aircrack-ng | 预装 |
-| bloodhound | bloodhound | apt 可装 |
-| ghidra | ghidra | apt 可装 |
+| nmap | nmap | Preinstalled |
+| sqlmap | sqlmap | Preinstalled |
+| hashcat | hashcat | Preinstalled |
+| john | john | Preinstalled |
+| hydra | hydra | Preinstalled |
+| metasploit | metasploit-framework | Preinstalled |
+| gobuster | gobuster | Preinstalled |
+| ffuf | ffuf | Preinstalled |
+| radare2 | radare2 | Preinstalled |
+| binwalk | binwalk | Preinstalled |
+| frida | python3-frida-tools | Preinstalled or pip |
+| burpsuite | burpsuite | Preinstalled |
+| wireshark | wireshark | Preinstalled |
+| nikto | nikto | Preinstalled |
+| wfuzz | wfuzz | Preinstalled |
+| impacket | impacket-scripts | Preinstalled |
+| netexec | netexec | Preinstalled |
+| responder | responder | Preinstalled |
+| aircrack-ng | aircrack-ng | Preinstalled |
+| bloodhound | bloodhound | Available through apt |
+| ghidra | ghidra | Available through apt |
 
-### Kali 2026.1 新增工具（2026年3月）
+### New Kali 2026.1 Tools (March 2026)
 
-| 工具 | 包名 | 用途 |
+| Tool | Package | Purpose |
 |------|------|------|
-| AdaptixC2 | adaptixc2 | 后渗透与对抗模拟框架 |
-| Atomic-Operator | atomic-operator | 跨平台 Atomic Red Team 测试执行 |
-| Fluxion | fluxion | WiFi 安全审计与社会工程 |
-| GEF | gef | GDB 现代化增强调试框架 |
-| MetasploitMCP | metasploitmcp | Metasploit 的 MCP Server 接口 |
-| SSTImap | sstimap | 服务端模板注入自动检测与利用 |
-| WPProbe | wpprobe | 快速 WordPress 插件枚举 |
-| XSStrike | xsstrike | 高级 XSS 扫描器 |
+| AdaptixC2 | adaptixc2 | Post-exploitation and adversary-emulation framework |
+| Atomic-Operator | atomic-operator | Cross-platform Atomic Red Team test execution |
+| Fluxion | fluxion | WiFi security auditing and social engineering |
+| GEF | gef | Modern enhanced debugging framework for GDB |
+| MetasploitMCP | metasploitmcp | Metasploit MCP server interface |
+| SSTImap | sstimap | Automated server-side template injection detection and exploitation |
+| WPProbe | wpprobe | Rapid WordPress plugin enumeration |
+| XSStrike | xsstrike | Advanced XSS scanner |
 
-### Kali 2025.4 新增工具（2025年12月）
+### New Kali 2025.4 Tools (December 2025)
 
-| 工具 | 包名 | 用途 |
+| Tool | Package | Purpose |
 |------|------|------|
-| evil-winrm-py | evil-winrm-py | Python 版 WinRM 远程命令执行 |
-| hexstrike-ai | hexstrike-ai | AI MCP 安全自动化平台（150+ 工具） |
-| bpf-linker | bpf-linker | BPF 静态链接器 |
+| evil-winrm-py | evil-winrm-py | Python WinRM remote command execution |
+| hexstrike-ai | hexstrike-ai | AI MCP security automation platform (150+ tools) |
+| bpf-linker | bpf-linker | BPF static linker |
 
-### Kali 原生 MCP 工具（重点优化）
+### Native Kali MCP Tools (Priority Optimization)
 
-| 工具 | 包名 | 用途 | 安装 |
+| Tool | Package | Purpose | Installation |
 |------|------|------|------|
-| mcp-kali-server | mcp-kali-server | Kali 官方 MCP，AI 直接调用终端工具 | `apt install mcp-kali-server` |
-| MetasploitMCP | metasploitmcp | Metasploit MCP 接口 | `apt install metasploitmcp` |
-| HexStrike AI | hexstrike-ai | 150+ 安全工具 MCP 自动化 | `apt install hexstrike-ai` |
+| mcp-kali-server | mcp-kali-server | Official Kali MCP; direct AI access to terminal tools | `apt install mcp-kali-server` |
+| MetasploitMCP | metasploitmcp | Metasploit MCP interface | `apt install metasploitmcp` |
+| HexStrike AI | hexstrike-ai | MCP automation for 150+ security tools | `apt install hexstrike-ai` |
 
-> **这是 Kali 版相比 Windows 版最大的优势**：三个 MCP 工具直接 apt 安装，无需手动配置 GitHub/npm/Docker。
+> **The Kali edition has the greatest advantage over the Windows edition**: the three MCP tools can be installed directly with apt, without manual GitHub/npm/Docker configuration.
 
-这意味着 `bootstrap-reverse.sh` 在 Kali 上的工作量远小于 Windows 版。
+This means `bootstrap-reverse.sh` requires much less work on Kali than on Windows.
 
 ---
 
-## 2. 快速开始
+## 2. Quick Start
 
-### 2.0 一键初始化（推荐新系统使用）
+### 2.0 One-Click Initialization (Recommended for New Systems)
 
 ```bash
 # 全新 Kali 2026.1 系统一键配置（需要 root）
@@ -153,9 +153,9 @@ sudo bash kali/scripts/quick-setup.sh --skip-update
 sudo bash kali/scripts/quick-setup.sh --minimal
 ```
 
-这个脚本会自动完成：系统更新 → 安装 2026.1 新工具 → 配置原生 MCP → 安装逆向工具 → 刷新索引 → 输出报告。
+This script automatically performs: system updates → installs new 2026.1 tools → configures native MCP → installs reverse-engineering tools → refreshes the index → prints a report.
 
-### 2.1 首次配置
+### 2.1 Initial Configuration
 
 ```bash
 # 1. 进入项目根目录
@@ -171,7 +171,7 @@ bash kali/scripts/refresh-tool-index.sh
 cat skills/tool-index.md
 ```
 
-### 2.2 一键配齐 Kali 原生 MCP（强烈推荐）
+### 2.2 Set Up All Native Kali MCP Tools in One Step (Strongly Recommended)
 
 ```bash
 # 安装 Kali 官方 MCP 三件套
@@ -181,7 +181,7 @@ bash kali/scripts/bootstrap-reverse.sh mcp-kali-server metasploitmcp hexstrike-a
 # 如果用 Kiro，手动复制到 ~/.kiro/settings/mcp.json
 ```
 
-### 2.3 安装 2026.1 新工具
+### 2.3 Install the New 2026.1 Tools
 
 ```bash
 # 全部新工具一键安装
@@ -191,7 +191,7 @@ bash kali/scripts/bootstrap-reverse.sh adaptixc2 atomic-operator sstimap xsstrik
 bash kali/scripts/bootstrap-reverse.sh coercer evil-winrm-py netexec responder bloodhound certipy
 ```
 
-### 2.4 安装缺失工具
+### 2.4 Install Missing Tools
 
 ```bash
 # 安装单个工具
@@ -204,45 +204,45 @@ bash kali/scripts/bootstrap-reverse.sh jadx apktool frida jshookmcp
 bash kali/scripts/bootstrap-reverse.sh idapro --start-services
 ```
 
-### 2.5 让 AI 客户端自动路由
+### 2.5 Enable Automatic Routing for the AI Client
 
-告诉你的 AI 客户端读取 `kali/RULES-kali.md`，它会自动完成全局注入。
+Tell your AI client to read `kali/RULES-kali.md`; it will automatically perform the global injection.
 
 ---
 
-## 3. 路径约定
+## 3. Path Conventions
 
-| 用途 | Kali 路径 |
+| Purpose | Kali Path |
 |------|----------|
-| 工具安装目录 | `~/tools/` 或 `/opt/` |
-| jadx | `/opt/jadx/` 或 `~/tools/jadx/` |
-| apktool | `/usr/local/bin/apktool`（apt）或 `~/tools/apktool/` |
-| Ghidra | `/opt/ghidra/` 或 `~/tools/ghidra/` |
-| IDA Pro | `/opt/idapro/`（如果有 Linux 版） |
+| Tool installation directory | `~/tools/` or `/opt/` |
+| jadx | `/opt/jadx/` or `~/tools/jadx/` |
+| apktool | `/usr/local/bin/apktool` (apt) or `~/tools/apktool/` |
+| Ghidra | `/opt/ghidra/` or `~/tools/ghidra/` |
+| IDA Pro | `/opt/idapro/` (if the Linux edition is available) |
 | Android SDK | `~/Android/Sdk/` |
-| SecLists | `/usr/share/seclists/`（apt）或 `~/tools/SecLists/` |
+| SecLists | `/usr/share/seclists/` (apt) or `~/tools/SecLists/` |
 | Node.js | `/usr/bin/node`（apt/nvm） |
-| Python | `/usr/bin/python3`（系统自带） |
-| MCP 配置 | `~/.claude/mcp.json` 或 `~/.kiro/settings/mcp.json` |
+| Python | `/usr/bin/python3` (system-provided) |
+| MCP configuration | `~/.claude/mcp.json` or `~/.kiro/settings/mcp.json` |
 
 ---
 
-## 4. 与 Windows 版的差异总结
+## 4. Summary of Differences from the Windows Edition
 
-| 维度 | Windows 版 | Kali 版 |
+| Dimension | Windows Edition | Kali Edition |
 |------|-----------|---------|
-| 脚本语言 | PowerShell (.ps1) | Bash (.sh) |
-| 包管理 | winget / GitHub Release ZIP | apt / pip / npm / GitHub Release tar.gz |
-| 路径分隔符 | `\` | `/` |
-| 环境变量 | `%USERPROFILE%` | `$HOME` |
-| 预装工具 | 几乎没有 | 大量安全工具预装 |
-| IDA 启动 | `start.ps1` | 手动启动 Linux 版 IDA；脚本只注册/检查 MCP，除非本机自行补了 launcher |
-| MCP 配置路径 | `%USERPROFILE%\.claude\mcp.json` | `~/.claude/mcp.json` |
-| 端口检测 | `TcpClient` | `nc -z` 或 `ss` |
+| Script language | PowerShell (.ps1) | Bash (.sh) |
+| Package management | winget / GitHub Release ZIP | apt / pip / npm / GitHub Release tar.gz |
+| Path separator | `\` | `/` |
+| Environment variables | `%USERPROFILE%` | `$HOME` |
+| Preinstalled tools | Almost none | Many security tools preinstalled |
+| IDA startup | `start.ps1` | Start the Linux edition of IDA manually; the script only registers/checks MCP unless a local launcher has been added |
+| MCP configuration path | `%USERPROFILE%\.claude\mcp.json` | `~/.claude/mcp.json` |
+| Port detection | `TcpClient` | `nc -z` or `ss` |
 
 ---
 
-## 5. 验证清单
+## 5. Verification Checklist
 
 ```bash
 # ─── 基础命令 ───
@@ -299,9 +299,9 @@ nc -z 127.0.0.1 23816 && echo "anything-analyzer OK" || echo "anything-analyzer 
 
 ---
 
-## 6. 常见问题
+## 6. Frequently Asked Questions
 
-### Q: Kali 自带的 radare2 版本太旧怎么办？
+### Q: What if the radare2 version included with Kali is too old?
 
 ```bash
 # 用官方源安装最新版
@@ -309,15 +309,15 @@ bash kali/scripts/bootstrap-reverse.sh r2
 # Kali 版默认优先 apt 安装/补齐 radare2；如需最新版可按平台文档改用 GitHub/source
 ```
 
-### Q: 我用的是 Parrot OS / BlackArch，能用吗？
+### Q: Can I use this with Parrot OS / BlackArch?
 
-可以。脚本检测的是命令是否存在，不绑定特定发行版。只是 `apt` 相关的自动安装可能需要改成 `pacman`（BlackArch）。
+Yes. The script checks whether commands exist and is not tied to a specific distribution. However, `apt`-based automatic installation may need to be changed to `pacman` (BlackArch).
 
-### Q: IDA Pro Linux 版怎么配？
+### Q: How do I configure the Linux edition of IDA Pro?
 
-把 IDA 安装到 `/opt/idapro/`，然后修改 `kali/scripts/bootstrap-manifest.json` 中 `idapro` 的 `startScript` 路径。
+Install IDA in `/opt/idapro/`, then edit the `startScript` path for `idapro` in `kali/scripts/bootstrap-manifest.json`.
 
-### Q: 我想同时在 Windows 和 Kali 上用这套系统
+### Q: I want to use this system on both Windows and Kali
 
-没问题。`skills/` 目录通过 Git 同步，`field-journal/` 的经验两边共享。只是执行脚本时 Windows 用 `skills/scripts/*.ps1`，Kali 用 `kali/scripts/*.sh`。
+No problem. The `skills/` directory is synchronized through Git, and the `field-journal` experience is shared between both sides. When running scripts, Windows uses `skills/scripts/*.ps1`, while Kali uses `kali/scripts/*.sh`.
 

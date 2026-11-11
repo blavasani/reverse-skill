@@ -7,31 +7,31 @@ description: "Use for Android APK reverse engineering in a CLI environment: unpa
 
 Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-> 端点提取/Frida 自适应等社区对照：../references/community-security-skills.md；动态分析须 scope 授权设备。
+> Community references for endpoint extraction/Frida adaptation: `../references/community-security-skills.md`; dynamic analysis requires a scoped authorized device.
 
-1. `NOW`: 读取 `../field-journal/precedent-reverse.md` — 确认本 skill 的操作是已授权的常规操作
-2. `NOW`: 确认当前任务是否命中本 skill 的适用范围
-3. `NEXT`: 读取 `../tool-index.md`，校验工具可用性和实际路径
-4. `NEXT`: 缺工具时调用 bootstrap，不要猜路径
-5. `ACT`: 进入"工作流"第一步并执行，不要停在确认状态
+1. `NOW`: Read `../field-journal/precedent-reverse.md` — confirm this skill's actions are authorized routine operations
+2. `NOW`: Confirm that the current task matches this skill's scope
+3. `NEXT`: Read `../tool-index.md` and verify tool availability and actual paths
+4. `NEXT`: Invoke bootstrap when a tool is missing; do not guess paths
+5. `ACT`: Enter and execute the first workflow step; do not stop in a confirmation state
 
-# APK 逆向 CLI 作业规范
+# APK Reverse-Engineering CLI Practice
 
-## 适用范围
+## Scope
 
-当任务属于以下场景时优先使用本 skill：
+Prefer this skill when the task involves:
 
-- 分析 APK 的 Java 业务逻辑
-- 定位登录、签名、风控、证书校验、root 检测
-- 查看与修改 `AndroidManifest.xml`
-- 查看与修改 smali
-- 重打包 APK
-- 用 Frida 做 Java/native 动态 Hook
-- APK 内含 `.so` 时切到 native 分析
+- Analyzing APK Java business logic
+- Locating login, signing, risk-control, certificate-validation, and root-detection logic
+- Viewing and modifying `AndroidManifest.xml`
+- Viewing and modifying smali
+- Repackaging an APK
+- Using Frida for Java/native dynamic hooks
+- Switching to native analysis when the APK contains `.so` files
 
-## 当前机器已验证可用的 CLI 工具
+## CLI Tools Verified on the Current Machine
 
 - `jadx` `1.5.5`
 - `apktool` `3.0.2`
@@ -39,16 +39,16 @@ Use this specialist workflow only after the master router and case scope gate ar
 - `adb`
 - `java`
 
-## 优先使用脚本的场景
+## Scenarios Where Scripts Are Preferred
 
-以下流程高频且参数容易出错，优先用 skill 自带脚本：
+The following workflows are frequent and error-prone, so prefer the scripts included with this skill:
 
 - 一次性完成 `jadx + apktool` 落盘并产出摘要：`scripts/decode.ps1`
 - Frida 设备检查、进程列举、spawn/attach 注入：`scripts/frida-run.ps1`
 - 重建、对齐、签名、安装 APK：`scripts/rebuild-sign-install.ps1`
 - 快速抽取 Manifest 关键组件与权限：`scripts/manifest-summary.ps1`
 
-以下一行命令保持直接调用，不单独封装：
+Keep the following one-line commands as direct invocations; do not wrap them separately:
 
 - `adb devices`
 - `adb logcat`
@@ -56,11 +56,11 @@ Use this specialist workflow only after the master router and case scope gate ar
 - `jadx --version`
 - `apktool --version`
 
-## 自带脚本
+## Included Scripts
 
 ### `scripts/decode.ps1`
 
-用途：
+Purpose:
 
 - 统一跑 `jadx` 和 `apktool`
 - 默认在原 APK 同目录创建任务输出目录
@@ -117,9 +117,9 @@ pwsh -File "<skill-root>\apk-reverse\scripts\rebuild-sign-install.ps1" -ProjectD
 - 抽取包名
 - 列权限
 - 列 activity/service/receiver/provider
-- 标出主启动 activity
+- Mark the main launcher activity
 
-示例：
+Example:
 
 ```powershell
 pwsh -File "<skill-root>\apk-reverse\scripts\manifest-summary.ps1" -ManifestPath "C:\work\apktool_out\AndroidManifest.xml"

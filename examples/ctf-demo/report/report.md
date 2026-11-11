@@ -1,26 +1,26 @@
-# ctf-demo — Final Report (示例)
+# ctf-demo — Final Report (Example)
 
-> 报告结构参考 `skills/docs-generator/references/security-report-templates.md`。
+> Report structure based on `skills/docs-generator/references/security-report-templates.md`.
 
-## 1. 概述
+## 1. Overview
 
-| 项 | 值 |
-|----|----|
-| 目标 | pwn1 (https://ctf.example.com/challenges/pwn1) |
-| 类型 | CTF pwn（栈溢出） |
-| 结果 | ✅ flag captured |
-| 耗时 | ~1.5h |
+| Item | Value |
+|------|-------|
+| Target | pwn1 (https://ctf.example.com/challenges/pwn1) |
+| Type | CTF pwn (stack overflow) |
+| Result | ✅ flag captured |
+| Duration | ~1.5h |
 
-## 2. 执行摘要
+## 2. Executive Summary
 
-pwn1 为无 PIE/无 canary 的 64 位 ELF，main 使用 `gets()` 读取 0x40 缓冲区。
-通过 0x48 偏移覆盖返回地址，调用程序内 win 函数获取 flag。远程验证成功。
+pwn1 is a 64-bit ELF with no PIE or canary; `main` uses `gets()` to read a 0x40-byte buffer.
+The return address is overwritten at offset 0x48, then the program's `win` function is called to obtain the flag. Remote verification succeeded.
 
-## 3. 时间线
+## 3. Timeline
 
-见 `timeline.md`（5 个阶段：init → recon → static → exploit → wrap）。
+See `timeline.md` (5 phases: init → recon → static → exploit → wrap).
 
-## 4. 发现
+## 4. Findings
 
 ### F-01
 
@@ -37,7 +37,7 @@ pwn1 为无 PIE/无 canary 的 64 位 ELF，main 使用 `gets()` 读取 0x40 缓
   3. Send the ret2win payload against the remote service (E-003)
 - remediation: Replace gets() with fgets/read; enable canary, PIE and full RELRO; rely on ASLR.
 
-## 5. 攻击路径（Evidence → Finding → Path）
+## 5. Attack Path (Evidence → Finding → Path)
 
 ### P-01
 
@@ -60,18 +60,18 @@ graph LR
   E --> F[远程验证 获取 flag]
 ```
 
-## 6. 复现
+## 6. Reproduction
 
 ```bash
 python3 exploit.py REMOTE
 ```
 
-## 7. 修复建议（若为真实应用）
+## 7. Remediation Recommendations (If This Were a Real Application)
 
-- 使用 `fgets`/`read` 替代 `gets`
-- 开启 canary + PIE + full RELRO
-- 部署 ASLR（服务器侧）
+- Replace `gets` with `fgets`/`read`.
+- Enable canary + PIE + full RELRO.
+- Deploy ASLR on the server.
 
-## 8. 附注
+## 8. Notes
 
-- field-journal 已脱敏沉淀（无真实目标信息）
+- The field-journal entry was sanitized (no real target information).
