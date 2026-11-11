@@ -25,7 +25,7 @@ Use this specialist workflow only after the master router and case scope gate ar
 - Host artifacts: Prefetch, Shimcache, Event Log, and browser history
 - Incident-response IOC extraction (combined with `malware-analysis/` / `threat-hunting/`)
 
-## 工作流
+## Workflow
 
 ### 1. Preservation
 
@@ -35,7 +35,7 @@ Use this specialist workflow only after the master router and case scope gate ar
 □ Record chain-of-custody notes in the timeline
 ```
 
-### 2. 内存
+### 2. Memory
 
 ```bash
 vol -f mem.dmp windows.info
