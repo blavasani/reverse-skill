@@ -2,6 +2,10 @@
 
 Use this repository as a client-neutral router for authorized reverse-engineering and security workflows.
 
+## Language policy
+
+Write all new and rewritten repository content in clear, correct English. Do not create translated duplicates, bilingual prose, deprecated aliases, promotional content, or stale references. Preserve technical identifiers, commands, payloads, and quoted sample data when they are not prose.
+
 ## Required reading order
 
 1. `RULES.md`

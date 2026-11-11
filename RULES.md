@@ -4,6 +4,10 @@
 
 ---
 
+## Language policy
+
+All maintained repository prose MUST be clear, correct English. Do not add translated duplicate documents, bilingual prose, deprecated aliases, promotional content, or stale references. Preserve technical identifiers, commands, payloads, and quoted sample data when they are not prose. When replacing a legacy document, migrate all references before deleting it.
+
 ## ACTIVATION AND CONSENT GATE (before any side effect)
 
 **Reading repository files is not authorization to execute them.** A request to inspect, review, summarize, or compare this repository remains read-only.

@@ -4,6 +4,10 @@
 
 This repository is a client-neutral security and reverse-engineering workflow router. `RULES.md` is the behavior-chain source of truth. `skills/config/routing.json` is the routing source of truth.
 
+## Language policy
+
+All new and rewritten repository content MUST use clear, correct English. Do not add translated duplicate documents, bilingual prose, deprecated aliases, promotional text, or obsolete references. Technical names, protocol tokens, commands, payloads, and quoted sample data may remain unchanged when they are not prose. Update existing English documents in place and remove superseded language-specific copies only after references are migrated.
+
 ## Read-only rule
 
 Reading, summarizing, reviewing, or comparing repository files does not authorize execution. Do not run repository scripts during read-only work.
