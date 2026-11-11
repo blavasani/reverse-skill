@@ -1,22 +1,22 @@
-# EDR Hook 调研速查
+# EDR Hook Survey Quick Reference
 
-> 仅限授权红队 / 对抗演练 / 自有产品测试，禁止用于未授权目标。
+> Authorized red-team operations, adversary simulations, and testing of owned products only; do not use against unauthorized targets.
 
-本文档汇总主流 EDR / AV 在用户态与内核态的监控点，供红队侦察阶段快速定位"该处理什么"。
+This document summarizes monitoring points used by major EDR / AV products in user mode and kernel mode, helping red teams quickly identify what requires analysis during reconnaissance.
 
-## 1. 主流 EDR 指纹与 hook 模式速查
+## 1. Major EDR Fingerprints and Hook Patterns
 
-| 厂商 / 产品 | 用户态组件 | 内核驱动 | 主要监控面 |
+| Vendor / product | User-mode components | Kernel drivers | Primary monitoring surface |
 |------------|-----------|---------|-----------|
-| CrowdStrike Falcon | `CSFalconService.exe`, `CSAgent.sys` 注入到目标进程 | `CSAgent.sys`, `CSBoot.sys` | 重内核 callback + ETW-TI；用户态 hook 较少（云查) |
-| Microsoft Defender for Endpoint (MDE) | `MsMpEng.exe`, `MpClient.dll` | `WdFilter.sys`, `WdBoot.sys`, `WdNisDrv.sys` | AMSI + ETW-TI + ntdll inline hook + kernel callback 全面 |
-| SentinelOne | `SentinelAgent.exe`, `SentinelHelperService.exe` | `SentinelMonitor.sys`, `SentinelDeviceControl.sys` | ntdll 用户态 hook 重 + 内核 callback + 自有 ETW provider |
-| Elastic Defend (原 Endpoint Security) | `elastic-endpoint.exe` | `elastic-endpoint-driver.sys` | 主要 ETW + 少量 ntdll hook，配合 Elastic Agent 上传 |
-| ESET | `ekrn.exe`, `eamsi.dll` | `eamonm.sys`, `epfwwfp.sys` | 用户态 hook 非常多（NtCreateFile / NtOpenProcess 等） |
-| Sophos Intercept X | `SophosFileScanner.exe`, `SophosNtpService.exe` | `SophosED.sys`, `hmpalert.sys` | ntdll hook + HMPA 内存防护 + 内核 callback |
-| Kaspersky | `avp.exe`, `klif.sys` | `klif.sys`, `klhk.sys` | 重用户态 hook + KLIF 自有微过滤 + 网络过滤驱动 |
-| Trend Micro Apex One | `TmListen.exe`, `TmCCSF.dll` | `tmcomm.sys`, `tmactmon.sys` | 用户态 hook + 行为监控驱动 |
-| Carbon Black | `RepMgr.exe`, `RepWAV.exe` | `ParityDriver.sys` | 偏内核 callback + ETW |
+| CrowdStrike Falcon | `CSFalconService.exe`, `CSAgent.sys` injected into target processes | `CSAgent.sys`, `CSBoot.sys` | Kernel-heavy callbacks + ETW-TI; fewer user-mode hooks (cloud scanning) |
+| Microsoft Defender for Endpoint (MDE) | `MsMpEng.exe`, `MpClient.dll` | `WdFilter.sys`, `WdBoot.sys`, `WdNisDrv.sys` | Comprehensive AMSI + ETW-TI + ntdll inline hooks + kernel callbacks |
+| SentinelOne | `SentinelAgent.exe`, `SentinelHelperService.exe` | `SentinelMonitor.sys`, `SentinelDeviceControl.sys` | Heavy ntdll user-mode hooks + kernel callbacks + proprietary ETW provider |
+| Elastic Defend (formerly Endpoint Security) | `elastic-endpoint.exe` | `elastic-endpoint-driver.sys` | Primarily ETW + limited ntdll hooks, with uploads through Elastic Agent |
+| ESET | `ekrn.exe`, `eamsi.dll` | `eamonm.sys`, `epfwwfp.sys` | Many user-mode hooks (NtCreateFile / NtOpenProcess, etc.) |
+| Sophos Intercept X | `SophosFileScanner.exe`, `SophosNtpService.exe` | `SophosED.sys`, `hmpalert.sys` | ntdll hooks + HMPA memory protection + kernel callbacks |
+| Kaspersky | `avp.exe`, `klif.sys` | `klif.sys`, `klhk.sys` | Heavy user-mode hooks + KLIF proprietary minifilter + network filter driver |
+| Trend Micro Apex One | `TmListen.exe`, `TmCCSF.dll` | `tmcomm.sys`, `tmactmon.sys` | User-mode hooks + behavioral monitoring drivers |
+| Carbon Black | `RepMgr.exe`, `RepWAV.exe` | `ParityDriver.sys` | Kernel-focused callbacks + ETW |
 
 ### 快速指纹脚本
 
@@ -46,9 +46,9 @@ Get-ChildItem 'C:\Windows\System32\drivers\*.sys' |
     Select-Object Name, VersionInfo
 ```
 
-## 2. 用户态 ntdll hook 重点函数
+## 2. Key User-Mode ntdll Hook Targets
 
-EDR 几乎一定 hook 的 `ntdll.dll` 导出（按 ATT&CK 行为分组）：
+EDRs almost always hook these `ntdll.dll` exports, grouped by ATT&CK behavior:
 
 | 函数 | 监控的行为 | ATT&CK |
 |------|-----------|--------|
