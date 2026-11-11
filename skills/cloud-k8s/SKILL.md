@@ -9,54 +9,54 @@ Use this specialist workflow only after the master router and case scope gate ar
 
 # Cloud / Container / Kubernetes Security
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED(execute immediately after reading)
 
-1. `NOW`: 读取 `../field-journal/precedent-pentest.md` — **云/K8s 测试必须书面授权**
-2. `NOW`: case-init + scope；明确账号边界、禁止破坏性操作
-3. `NOW`: 确认是云元数据/容器/K8s/IAM，而非普通 Web 扫（后者 `pentest-tools/`）
-4. `NEXT`: tool-index；kubectl/aws/gcloud 等多为手动安装
-5. `ACT`: 从「身份与暴露面」开始，禁止默认全网扫描
+1. `NOW`: Read `../field-journal/precedent-pentest.md` — **Cloud/K8s testing requires written authorization**
+2. `NOW`: case-init + scope;Define account boundaries and prohibit destructive operations
+3. `NOW`: Confirm this is cloud metadata/containers/K8s/IAM rather than an ordinary web scan(the latter `pentest-tools/`)
+4. `NEXT`: tool-index;kubectl/aws/gcloud and others usually require manual installation
+5. `ACT`: Start with “identity and exposure”; never scan the entire internet by default
 
-## 适用场景
+## Applicable scenarios
 
-- 云元数据 SSRF（169.254.169.254 / IMDS）
-- IAM 过度权限、公开存储桶、错误安全组
-- Docker/containerd 逃逸路径评估
-- Kubernetes RBAC、Secrets、Admission、供应链镜像
-- 容器镜像漏洞（可联动 `supply-chain-security/`）
+- Cloud metadata SSRF(169.254.169.254 / IMDS)
+- Overprivileged IAM, public buckets, and incorrect security groups
+- Docker/containerd escape-path assessment
+- Kubernetes RBAC, Secrets, Admission, and supply-chain images
+- Container image vulnerabilities(can be combined with `supply-chain-security/`)
 
-## 工作流
+## Workflow
 
-### Phase 1 — 身份与边界
+### Phase 1 — Identity and boundaries
 
 ```text
-□ 当前身份：云 AK/SK、K8s SA、节点 SSH？
-□ 范围：单账号 / 单 cluster / 单 namespace
-□ 网络档：authorized_target_only
+□ Current identity:cloud AK/SK, K8s SA, or node SSH?
+□ Scope:Single account / single cluster / single namespace
+□ Network profile:authorized_target_only
 ```
 
-### Phase 2 — 云控制面
+### Phase 2 — Cloud control plane
 
 ```bash
-# 示例（按厂商替换；MUST 在授权账号内）
+# Example (replace for the provider; MUST run in the authorized account)
 aws sts get-caller-identity
 aws s3 ls
-# Azure / GCP 对应 identity 命令
+# Azure / GCP corresponding identity command
 ```
 
 ```text
-□ 公开桶 / 错误 ACL
-□ 元数据：IMDSv1 vs v2；SSRF 链
-□ 角色可扮演（PassRole）与横向
+□ Public buckets / incorrect ACLs
+□ Metadata:IMDSv1 vs v2;SSRF chain
+□ Role assumption (PassRole) and lateral movement
 ```
 
-### Phase 3 — 容器
+### Phase 3 — Containers
 
 ```text
-□ 是否 privileged / hostPath / hostNetwork
-□ capabilities（SYS_ADMIN 等）
-□ 可写宿主机路径 → 逃逸候选
-□ 镜像历史与已知 CVE → Trivy
+□ Whether privileged / hostPath / hostNetwork
+□ capabilities(SYS_ADMIN and others)
+□ Writable host paths → escape candidates
+□ Image history and known CVEs → Trivy
 ```
 
 ### Phase 4 — Kubernetes
@@ -68,37 +68,37 @@ kubectl get clusterrolebindings
 ```
 
 ```text
-□ SA token 挂载与权限
-□ 危险 admission webhook 缺失
-□ etcd / dashboard 暴露
-□ 网络策略是否默认放行
+□ SA token mounts and permissions
+□ Dangerous or missing admission webhooks
+□ etcd / dashboard exposure
+□ Whether network policies allow traffic by default
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 | 自举 |
+| Tool | Purpose | Bootstrap |
 |------|------|------|
-| kubectl | 集群交互 | 手动 |
-| trivy | 镜像/IaC | bootstrap `trivy` 若可用 |
-| kube-bench / kubeaudit | CIS/配置 | 手动 |
-| pacu / scoutsuite | 云审计（授权） | 手动 |
-| nuclei | 已知云漏洞模板 | bootstrap nmap/nuclei 生态 |
+| kubectl | Cluster interaction | Manual |
+| trivy | Images/IaC | bootstrap `trivy` if available |
+| kube-bench / kubeaudit | CIS/configuration | Manual |
+| pacu / scoutsuite | Cloud auditing (authorized) | Manual |
+| nuclei | Known cloud vulnerability templates | bootstrap nmap/nuclei ecosystem |
 
-## 参考
+## References
 
 - `references/k8s-cloud-checklist.md`
-- CTF 对照：`../../CTF-Sandbox-Orchestrator/competition-agent-cloud/`
+- CTF cross-reference:`../../CTF-Sandbox-Orchestrator/competition-agent-cloud/`
 - `../supply-chain-security/` `../pentest-tools/`
 
-## 路由上下文
+## Routing context
 
-**上游**: MASTER R23  
-**下游**: 拿到节点 shell → `attack-chain` / `windows-ad`；镜像漏洞 → supply-chain  
-**MUST NOT**: 未授权扫公有云其他租户
+**Upstream**: MASTER R23
+**Downstream**: Obtain a node shell → `attack-chain` / `windows-ad`; image vulnerabilities → supply-chain
+**MUST NOT**: Do not scan other public-cloud tenants without authorization
 
-## 任务完成自检
+## Completion self-check
 
-- [ ] 是否限定在授权账号/cluster？
-- [ ] 发现是否含复现与影响？
-- [ ] 是否避免破坏性操作？
-- [ ] 报告 / journal？
+- [ ] Is the work limited to the authorized account/cluster?
+- [ ] Do findings include reproduction and impact?
+- [ ] Were destructive operations avoided?
+- [ ] Report / journal?

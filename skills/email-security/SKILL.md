@@ -9,51 +9,51 @@ Use this specialist workflow only after the master router and case scope gate ar
 
 # Email Security & Phishing Analysis
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED
 
-1. `NOW`: 确认授权（分析样本邮件 / 租户配置评审）
-2. `NOW`: 不向真实用户二次投递恶意样本
-3. `ACT`: 头认证 → 内容/URL → 附件沙箱 → 租户控制面建议
+1. `NOW`: Confirm authorization (analyze sample emails / review tenant configuration).
+2. `NOW`: Do not resend malicious samples to real users.
+3. `ACT`: Header authentication → content/URLs → attachment sandbox → tenant control-plane recommendations.
 
-## 适用场景
+## Use Cases
 
-- 钓鱼邮件拆解与 IOC
-- SPF/DKIM/DMARC 配置评估
-- BEC 商务邮件欺诈模式
-- OAuth 应用钓鱼 / 邮箱令牌滥用（联合 llm/cloud 身份）
-- 安全意识演练设计（授权）
+- Phishing-email deconstruction and IOC extraction
+- SPF/DKIM/DMARC configuration assessment
+- Business email compromise (BEC) patterns
+- OAuth application phishing / mailbox-token abuse (combined with llm/cloud identity)
+- Authorized security-awareness exercise design
 
-## 工作流
+## Workflow
 
 ```text
-□ 完整原始头：Received 链、From/Return-Path 一致性
-□ SPF/DKIM/DMARC 对齐结果
-□ URL 沙箱与附件静态（联合 malware-analysis）
-□ 仿冒品牌与回复地址差异
-□ 租户：反钓鱼策略、外部标记、MFA、OAuth app 同意
+□ Complete raw headers: Received chain and From/Return-Path consistency
+□ SPF/DKIM/DMARC alignment results
+□ URL sandboxing and static attachment analysis (combined with malware-analysis)
+□ Brand impersonation and reply-address differences
+□ Tenant controls: anti-phishing policy, external markers, MFA, OAuth app consent
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 |
-|------|------|
-| 邮件客户端「查看源」 | 头 |
-| dig/nslookup | SPF/DMARC 记录 |
-| urlscan / 沙箱 | 链接与附件 |
-| 租户管理中心 | 策略 |
+| Tool | Purpose |
+|------|---------|
+| Email client “View Source” | Headers |
+| dig/nslookup | SPF/DMARC records |
+| urlscan / sandbox | Links and attachments |
+| Tenant administration center | Policies |
 
-## 参考
+## References
 
 - `references/email-auth-checklist.md`
-- `../malware-analysis/` `../attack-chain/`（钓鱼阶段） `../windows-ad/`（令牌）
+- `../malware-analysis/` `../attack-chain/` (phishing phase) `../windows-ad/` (tokens)
 
-## 路由上下文
+## Routing Context
 
-**上游**: MASTER R36  
-**MUST NOT**: 未授权对第三方域群发测试钓鱼
+**Upstream**: MASTER R36
+**MUST NOT**: Bulk-send phishing tests to third-party domains without authorization.
 
-## 任务完成自检
+## Completion Self-Check
 
-- [ ] 头认证结论是否完整？
-- [ ] IOC 是否可检测化（联合 threat-hunting）？
-- [ ] Checklist？
+- [ ] Are header-authentication conclusions complete?
+- [ ] Are IOCs detection-ready (combined with threat-hunting)?
+- [ ] Checklist completed?
