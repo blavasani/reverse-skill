@@ -24,13 +24,13 @@
 - 符号迁移、bindiff、跨版本、PDB 缺失、函数偏移迁移、symbol migration、版本对比、旧版符号
 - N-day、Nday、补丁差分、patch diff、patch tuesday、1day、CVE 复现、漏洞还原、ghidriff、Diaphora、DeepDiff、补丁分析
 - pwn、栈溢出、堆溢出、ROP、ret2libc、ret2csu、one_gadget、libc-database、tcache、fastbin、kernel pwn、SMEP、SMAP、KASLR、modprobe_path、commit_creds、pwntools、GEF、pwndbg
-- 固件、firmware、IoT、binwalk、unblob、squashfs、UBI、JFFS2、Firmadyne、FAT、QEMU 全系统仿真、EMBA、固件渗透、路由器固件、嵌入式漏洞利用、AFL++、boofuzz、UART、JTAG
+- firmware、IoT、binwalk、unblob、squashfs、UBI、JFFS2、Firmadyne、FAT、QEMU 全系统仿真、EMBA、固件渗透、路由器固件、嵌入式漏洞利用、AFL++、boofuzz、UART、JTAG
 - BurpSuite、Burp MCP、Intruder、Repeater、Collaborator、代理历史分析
-- LLM 安全、AI 安全测试、Prompt 注入、jailbreak、越狱、Agent 安全、garak、PyRIT
+- LLM 安全、AI 安全测试、Prompt 注入、jailbreak、Agent 安全、garak、PyRIT
 - API 安全测试、GraphQL 安全、JWT 攻击、供应链安全、SBOM、Trivy
 - iOS 逆向、Objection、YARA、恶意软件分析、AI 反编译、LLM4Decompile
 - Agent 不干活、AI 懒、跳过步骤、Prompt 工程、Agent 服从性
-- EDR 绕过、AV bypass、免杀、unhook、direct syscall、indirect syscall、Hell's Gate、SysWhispers、ETW patch、AMSI patch、call stack spoofing、MITRE T1562、CrowdStrike 绕过、Defender 绕过、SentinelOne 绕过、pe-sieve
+- EDR 绕过、AV bypass、unhook、direct syscall、indirect syscall、Hell's Gate、SysWhispers、ETW patch、AMSI patch、call stack spoofing、MITRE T1562、CrowdStrike 绕过、Defender 绕过、SentinelOne 绕过、pe-sieve
 - 端口扫描、Nmap、漏洞扫描、Nuclei、SQL 注入、SQLMap、目录爆破、FFUF、密码破解、Hashcat、Hydra、Metasploit、Impacket、pentestMCP
 - SRC、Bug Bounty、众测、漏洞赏金、HackerOne、WAF bypass、绕过 WAF、IDOR、越权、任意账号
 - 画图、流程图、架构图、攻击路径图、时序图、状态图、数据流图、Mermaid、Graphviz、PlantUML、diagram
