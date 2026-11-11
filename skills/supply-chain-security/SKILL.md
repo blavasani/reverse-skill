@@ -2,6 +2,10 @@
 name: supply-chain-security
 description: Use for software supply-chain security assessment covering SBOM, SCA, CI/CD pipelines, container images, build integrity, dependency provenance, and vulnerability reachability.
 ---
+
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
 # Supply Chain Security Testing
 
 ## ACTION REQUIRED（读完后立刻执行）

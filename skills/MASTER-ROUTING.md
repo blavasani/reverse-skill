@@ -18,14 +18,14 @@
 ### Windows
 
 ```powershell
-powershell -File skills\scripts\master-route.ps1 -Hint "<用户任务>"
+powershell -File skills\scripts\master-route.ps1 -Hint "<task>"
 # 默认写出当前项目的 work/master-route-<ts>/route-scope.md；从其他目录调用时显式指定项目根
-powershell -File skills\scripts\master-route.ps1 -Hint "<用户任务>" -ProjectRoot "C:\path\to\analysis-project"
-powershell -File skills\scripts\case-init.ps1 -Hint "<用户任务>" -CaseName "my-case"
+powershell -File skills\scripts\master-route.ps1 -Hint "<task>" -ProjectRoot "C:\path\to\analysis-project"
+powershell -File skills\scripts\case-init.ps1 -Hint "<task>" -CaseName "my-case"
 # case 默认写入当前项目的 work/<case>/；-PackageRoot 保持兼容，-ProjectRoot 优先级更高
-powershell -File skills\scripts\case-init.ps1 -Hint "<用户任务>" -CaseName "my-case" -ProjectRoot "C:\path\to\analysis-project"
+powershell -File skills\scripts\case-init.ps1 -Hint "<task>" -CaseName "my-case" -ProjectRoot "C:\path\to\analysis-project"
 # 一次成型可 ACT（授权 + 目标 + 网络档）：
-powershell -File skills\scripts\case-init.ps1 -Hint "<任务>" -CaseName "my-case" -AuthGranted -TargetUrl "https://target/" -NetworkProfile authorized_target_only
+powershell -File skills\scripts\case-init.ps1 -Hint "<task>" -CaseName "my-case" -AuthGranted -TargetUrl "https://target/" -NetworkProfile authorized_target_only
 # 本地离线样本：
 powershell -File skills\scripts\case-init.ps1 -Hint "offline apk" -CaseName "my-sample" -Preset offline-sample -Sample ".\app.apk"
 # 冒烟：verify + 脚本解析 + 路由矩阵（含中文 Hint）
@@ -42,10 +42,10 @@ python3 skills/case-review/scripts/review_case.py work/<case> --verify-hashes --
 不要求为了核心 route/case 流程安装 PowerShell：
 
 ```bash
-bash skills/scripts/master-route.sh --hint "<用户任务>"
-bash skills/scripts/master-route.sh --hint "<用户任务>" --project-root "/path/to/analysis-project"
-bash skills/scripts/case-init.sh --hint "<用户任务>" --case-name "my-case"
-bash skills/scripts/case-init.sh --hint "<用户任务>" --case-name "my-case" --project-root "/path/to/analysis-project"
+bash skills/scripts/master-route.sh --hint "<task>"
+bash skills/scripts/master-route.sh --hint "<task>" --project-root "/path/to/analysis-project"
+bash skills/scripts/case-init.sh --hint "<task>" --case-name "my-case"
+bash skills/scripts/case-init.sh --hint "<task>" --case-name "my-case" --project-root "/path/to/analysis-project"
 # 本地离线样本：
 bash skills/scripts/case-init.sh --hint "offline apk" --case-name "my-sample" --preset offline-sample --sample ./app.apk
 # ACT 前轻量 scope 门禁（--force 为兼容参数，不能绕过硬门）：

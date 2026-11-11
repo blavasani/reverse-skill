@@ -3,6 +3,10 @@ name: wifi-wireless
 description: Use for authorized wireless security assessment including Wi-Fi capture, WPA handshake analysis, rogue AP detection research, and lab-only deauth testing.
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 # Wi-Fi / Wireless Security
 
 ## ACTION REQUIRED（读完后立刻执行）

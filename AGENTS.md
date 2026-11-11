@@ -4,6 +4,10 @@
 
 This repository is a client-neutral security and reverse-engineering workflow router. `RULES.md` is the behavior-chain source of truth. `skills/config/routing.json` is the routing source of truth.
 
+## Documentation policy
+
+All maintained documentation MUST be clear, correct English and agent-first. Documentation MUST describe executable scope, inputs, routing, required tools, safety gates, outputs, and validation. Do not write human-oriented marketing, tutorials, UI walkthroughs, promotional content, translated duplicates, bilingual prose, deprecated aliases, or stale references. Prefer one canonical document per concept. Merge useful unique material into the canonical agent document, migrate references, then delete superseded copies. Technical names, protocol tokens, commands, payloads, and quoted sample data may remain unchanged when they are not prose.
+
 ## Read-only rule
 
 Reading, summarizing, reviewing, or comparing repository files does not authorize execution. Do not run repository scripts during read-only work.

@@ -3,6 +3,10 @@ name: threat-hunting
 description: Use for blue-team threat hunting, detection engineering with Sigma/YARA, SIEM query design, and incident detection validation.
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 # Threat Hunting & Detection Engineering
 
 ## ACTION REQUIRED（读完后立刻执行）

@@ -3,6 +3,10 @@ name: radio-sdr
 description: Use for authorized RF/SDR security research including signal identification, replay feasibility study in shielded labs, and wireless protocol analysis outside classic Wi-Fi.
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 # RF / SDR Security Research
 
 ## ACTION REQUIRED（读完后立刻执行）

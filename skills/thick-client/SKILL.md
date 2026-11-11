@@ -3,6 +3,10 @@ name: thick-client
 description: Use for authorized security testing of desktop thick clients including local storage, update channels, IPC, traffic, and client-side trust boundaries.
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 # Thick Client Security Testing
 
 ## ACTION REQUIRED（读完后立刻执行）

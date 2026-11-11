@@ -1,12 +1,16 @@
 ---
 name: dotnet-reverse
-description: Use for .NET and C# reverse engineering, including managed assemblies, NativeAOT, Sharp tools, obfuscated programs, loaders, and malware. Prefer dnSpyEx and de4dot; use dnSpy MCP for agent interaction when available. For purely native binaries, use reverse-engineering or ida-reverse.
+description: "Use the dotnet-reverse specialist workflow after routing and authorization. Follow its ACTION REQUIRED steps and preserve evidence provenance."
 license: MIT
-compatibility: Requires a filesystem-based code agent or CLI with shell access, Windows host preferred (dnSpyEx 是 Windows GUI)；Linux/macOS 可用 ILSpy/de4dot CLI + mono/dotnet runtime。
+compatibility: "Requires a filesystem-based code agent or CLI with shell access. Windows is preferred for dnSpyEx; Linux and macOS can use ILSpy/de4dot CLI with mono or the dotnet runtime."
 allowed-tools: Bash Read Write Edit Glob Grep Task WebFetch WebSearch
 metadata:
   user-invocable: "false"
 ---
+
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
 
 # .NET / C# 逆向作业规范
 

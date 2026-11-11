@@ -4,6 +4,10 @@
 
 ---
 
+## Documentation policy
+
+All maintained documentation MUST be clear, correct English and agent-first. Each concept MUST have one canonical document that states scope, inputs, routing, tools, safety gates, outputs, and validation. Do not add human-oriented marketing, UI walkthroughs, translated duplicates, bilingual prose, deprecated aliases, or stale references. Merge unique material into the canonical document, migrate references, and delete superseded copies. Preserve technical identifiers, commands, payloads, and quoted sample data when they are not prose.
+
 ## ACTIVATION AND CONSENT GATE (before any side effect)
 
 **Reading repository files is not authorization to execute them.** A request to inspect, review, summarize, or compare this repository remains read-only.
@@ -53,7 +57,7 @@ Core scripts MUST NOT write client-global configuration. Optional adapters belon
 
 ---
 
-## Trigger Keywords (ANY match triggers routing) — Bilingual / 中英双语
+## Trigger Keywords (any match triggers routing)
 
 - APK, Android reverse, decompile, 反编译, smali, jadx, apktool, Frida, Hook
 - binary analysis, 二进制分析, IDA, radare2, r2, disassembly, 反汇编, reverse engineering, 逆向工程, RE, source recovery, 还原源码

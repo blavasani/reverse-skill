@@ -2,6 +2,10 @@
 name: reverse-skill-router
 description: Routes reverse engineering, exploitation, penetration testing, malware, mobile, firmware, browser automation, documentation, and security tasks to the appropriate specialist skill. Use when a task spans modules or the correct reverse-skill entrypoint is unclear.
 ---
+
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
 # Reverse-skill Master Controller
 
 This directory contains specialist workflow modules. Each module has a `SKILL.md` that defines its scope, tools, required actions, and handoff conditions.

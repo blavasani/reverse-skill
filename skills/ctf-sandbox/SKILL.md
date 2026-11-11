@@ -3,6 +3,10 @@ name: ctf-sandbox
 description: Use as the PRIMARY entry for CTF, attack-and-defense, and sandbox challenge orchestration when a more specific pwn, APK, or IDA route does not take precedence. Delegate to CTF-Sandbox-Orchestrator.
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 # CTF sandbox entry (sidecar, not a second router)
 
 ## ACTION REQUIRED（读完后立刻执行）

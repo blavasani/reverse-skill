@@ -3,6 +3,10 @@ name: threat-intelligence
 description: Use for authorized OSINT and cyber threat intelligence that enriches IOCs, campaigns, impersonation, scams, or threat actors from public sources. Includes bounded X/Twitter search through Xquik, source preservation, corroboration, and evidence handoff.
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 # Threat Intelligence & Public-Source OSINT
 
 ## ACTION REQUIRED（读完后立刻执行）
