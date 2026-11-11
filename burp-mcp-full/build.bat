@@ -58,8 +58,8 @@ set "DIST=build\libs"
 
 echo [1/4] Downloading dependencies...
 if not exist %LIB% mkdir %LIB%
-if not exist %LIB%\montoya-api.jar curl -sL -o %LIB%\montoya-api.jar "https://repo1.maven.org/maven2/net/portswigger/burp/extensions/montoya-api/2025.5/montoya-api-2025.5.jar"
-if not exist %LIB%\gson.jar        curl -sL -o %LIB%\gson.jar        "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.11.0/gson-2.11.0.jar"
+if not exist %LIB%\montoya-api.jar curl -sL -o %LIB%\montoya-api.jar "https://repo1.maven.org/maven2/net/portswigger/burp/extensions/montoya-api/2026.7/montoya-api-2026.7.jar"
+if not exist %LIB%\gson.jar        curl -sL -o %LIB%\gson.jar        "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.15.0/gson-2.15.0.jar"
 if not exist %LIB%\nanohttpd.jar   curl -sL -o %LIB%\nanohttpd.jar   "https://repo1.maven.org/maven2/org/nanohttpd/nanohttpd/2.3.1/nanohttpd-2.3.1.jar"
 
 echo [2/4] Compiling...
