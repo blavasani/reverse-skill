@@ -53,7 +53,7 @@ Core scripts MUST NOT write client-global configuration. Optional adapters belon
 
 ---
 
-## Trigger Keywords (ANY match triggers routing) — Bilingual / 中英双语
+## Trigger Keywords (any match triggers routing)
 
 - APK, Android reverse, decompile, 反编译, smali, jadx, apktool, Frida, Hook
 - binary analysis, 二进制分析, IDA, radare2, r2, disassembly, 反汇编, reverse engineering, 逆向工程, RE, source recovery, 还原源码
