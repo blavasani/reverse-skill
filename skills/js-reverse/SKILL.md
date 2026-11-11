@@ -3,6 +3,10 @@ name: js-reverse
 description: Use for frontend JavaScript reverse engineering with js-reverse-mcp, including signature tracing, page evidence, runtime sampling, local environment reconstruction, and reproducible findings. Prefer available js-reverse tools; use jshookmcp when stronger browser, CDP, or hooking support is needed.
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 # MCP 前端 JS 逆向作业规范
 
 ## ACTION REQUIRED（读完后立刻执行）

@@ -1,10 +1,11 @@
 ---
 name: docs-generator
-description: |
-  Creates task-oriented technical documentation with progressive disclosure. Use when writing READMEs, API docs, architecture docs, or markdown documentation.
-  Also use this skill at the END of any completed reverse engineering, penetration testing, CTF, or security analysis task to generate a formal report in the user's project directory.
-  Trigger keywords: 写报告, 写文档, 出报告, writeup, 技术文档, report, documentation.
+description: "Use the docs-generator specialist workflow after routing and authorization. Follow its ACTION REQUIRED steps and preserve evidence provenance."
 ---
+
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
 
 # Technical Documentation
 

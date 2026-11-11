@@ -3,6 +3,10 @@ name: apk-reverse
 description: "Use for Android APK reverse engineering in a CLI environment: unpacking, Java decompilation, smali changes, repackaging, Frida hooks, and optional native .so analysis. Prefer locally installed jadx, apktool, Frida, adb, IDA, or radare2."
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 ## ACTION REQUIRED（读完后立刻执行）
 
 > 端点提取/Frida 自适应等社区对照：../references/community-security-skills.md；动态分析须 scope 授权设备。

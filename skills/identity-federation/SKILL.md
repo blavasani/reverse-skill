@@ -3,6 +3,10 @@ name: identity-federation
 description: Use for authorized assessment of federated identity systems including SAML, OIDC, OAuth2 flows, SSO misconfiguration, and token confusion issues.
 ---
 
+## Agent summary
+
+Use this specialist workflow only after the master router and case scope gate are satisfied. Prefer the tools and references named in this file. Follow ACTION REQUIRED in order, keep all activity within the approved scope, and report conclusions as Evidence -> Finding -> Path.
+
 # Identity Federation (SAML / OIDC / OAuth)
 
 ## ACTION REQUIRED（读完后立刻执行）
