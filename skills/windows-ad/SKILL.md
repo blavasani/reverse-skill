@@ -9,30 +9,30 @@ Use this specialist workflow only after the master router and case scope gate ar
 
 # Windows / Active Directory Security
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 读取 `../field-journal/precedent-pentest.md`
-2. `NOW`: **域/AD 测试必须明确授权范围**（含 DC、是否允许投毒/中继）
-3. `NOW`: case-init；network_profile 与禁止动作写清
-4. `NEXT`: tool-index（impacket/certipy/bloodhound 等常手动）
-5. `ACT`: 从身份枚举与 BloodHound 图开始，不先上破坏性利用
+1. `NOW`: Read `../field-journal/precedent-pentest.md`
+2. `NOW`: **Define the authorized scope for domain/AD testing** (including DCs and whether poisoning/relay are allowed)
+3. `NOW`: Run case-init; document the network profile and prohibited actions clearly
+4. `NEXT`: Check tool-index (impacket/certipy/bloodhound are often installed manually)
+5. `ACT`: Start with identity enumeration and the BloodHound graph; do not begin with destructive exploitation
 
-## 适用场景
+## Applicable scenarios
 
-- 域渗透、Kerberoasting、AS-REP、委派
-- AD CS（ESC1–ESC8 等）证书攻击
-- BloodHound / SharpHound 攻击路径
-- NTLM Relay / Coercer 强制认证
-- 本地提权到域路径（Potato 等作为跳板）
+- Domain penetration testing, Kerberoasting, AS-REP, and delegation
+- AD CS certificate attacks (ESC1–ESC8 and related cases)
+- BloodHound / SharpHound attack paths
+- NTLM Relay / Coercer forced authentication
+- Local privilege escalation into domain paths (Potato tools as pivots)
 
-## 与 attack-chain 关系
+## Relationship to attack-chain
 
-- **多阶段从外网到域控** → PRIMARY 可仍是 `attack-chain/`，本 skill 为 **AD 专科**
-- **已在域内专注身份** → PRIMARY = 本 skill
+- **Multi-stage activity from the external network to the domain controller** → PRIMARY may remain `attack-chain/`; this skill is the **AD specialist**
+- **Identity-focused work already inside the domain** → PRIMARY = this skill
 
-## 工作流
+## Workflow
 
-### 1. 枚举
+### 1. Enumeration
 
 ```bash
 # 示例 Impacket / 内置（需凭据与授权）
@@ -40,7 +40,7 @@ nxc smb <range> -u user -p pass
 bloodhound-python -d domain.local -u user -p pass -c All -ns <DC>
 ```
 
-### 2. 常见路径（先图后枪）
+### 2. Common paths (graph first, exploitation second)
 
 ```text
 □ Kerberoast / AS-REP → 离线破解
@@ -50,7 +50,7 @@ bloodhound-python -d domain.local -u user -p pass -c All -ns <DC>
 □ 中继：LLMNR/NBT-NS + ntlmrelayx（确认授权）
 ```
 
-### 3. 凭证与横向
+### 3. Credentials and lateral movement
 
 ```text
 □ secretsdump / lsassy / mimikatz（严格授权与清理）
@@ -58,32 +58,32 @@ bloodhound-python -d domain.local -u user -p pass -c All -ns <DC>
 □ 每步写 Evidence；高危等用户确认
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 |
+| Tool | Purpose |
 |------|------|
-| BloodHound / SharpHound | 路径图 |
+| BloodHound / SharpHound | Path graph |
 | Certipy | AD CS |
-| Impacket / NetExec | 横向与枚举 |
-| Rubeus / Mimikatz | 票据与凭证（授权） |
-| Coercer / Responder | 强制认证 / 投毒 |
+| Impacket / NetExec | Lateral movement and enumeration |
+| Rubeus / Mimikatz | Tickets and credentials (with authorization) |
+| Coercer / Responder | Forced authentication / poisoning |
 
-## 参考
+## References
 
 - `references/ad-attack-paths.md`
 - `../pentest-tools/references/network-attack-defense.md`
 - `../attack-chain/`
 - seeds: `field-journal/seed-005_ad-certipy-esc1.md` `seed-007_ntlm-relay-coercer.md` `seed-013_kerberoasting-spn.md`
 
-## 路由上下文
+## Routing context
 
-**上游**: MASTER R24  
-**下游**: 报告 `docs-generator`；需 EDR 研究 `edr-bypass-re`  
-**MUST NOT**: 无授权 DCSync / 黄金票打生产
+**Upstream**: MASTER R24
+**Downstream**: Reporting via `docs-generator`; use `edr-bypass-re` for EDR research
+**MUST NOT**: Run unauthorized DCSync / golden-ticket activity against production
 
-## 任务完成自检
+## Completion checklist
 
-- [ ] 是否先有图/枚举再有利用？
-- [ ] 是否记录可复现命令并脱敏？
-- [ ] 是否遵守 scope 禁止项？
-- [ ] Checklist？
+- [ ] Did graph analysis/enumeration precede exploitation?
+- [ ] Are reproducible commands recorded and sanitized?
+- [ ] Were scope prohibitions followed?
+- [ ] Checklist complete?

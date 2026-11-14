@@ -9,21 +9,21 @@ Use this specialist workflow only after the master router and case scope gate ar
 
 # Wi-Fi / Wireless Security
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 读取 precedent-pentest；**无线攻击法律风险高**，必须书面授权与物理范围
-2. `NOW`: scope 写明目标 SSID/BSSID/场地；禁止扫邻居网络
-3. `NEXT`: 确认适配器监听模式能力
-4. `ACT`: 侦察 → 采集 → 分析（实验室优先）
+1. `NOW`: Read precedent-pentest; **wireless attacks carry significant legal risk**, so written authorization and physical scope are required
+2. `NOW`: Record the target SSID/BSSID/site in scope; scanning neighboring networks is prohibited
+3. `NEXT`: Confirm the adapter's monitor-mode capability
+4. `ACT`: Reconnaissance -> collection -> analysis (laboratory first)
 
-## 适用场景
+## Applicable scenarios
 
-- 授权 Wi-Fi 安全评估
-- WPA/WPA2 握手采集与离线评估
-- 流氓 AP / 钓鱼热点检测研究
-- 企业无线隔离与门户安全
+- Authorized Wi-Fi security assessment
+- WPA/WPA2 handshake capture and offline assessment
+- Rogue AP / phishing hotspot detection research
+- Enterprise wireless isolation and captive-portal security
 
-## 工作流
+## Workflow
 
 ```text
 □ iwconfig / airmon-ng 进入 monitor（合法环境）
@@ -33,27 +33,27 @@ Use this specialist workflow only after the master router and case scope gate ar
 □ 报告：加密类型、隔离、门户绕过、建议
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 |
-|------|------|
-| aircrack-ng suite | 采集/评估 |
+| Tool | Purpose |
+|------|---------|
+| aircrack-ng suite | Capture/assessment |
 | hcxdumptool / hcxtools | PMKID |
-| hashcat | 口令评估 |
-| Wireshark | 管理帧分析 |
+| hashcat | Password assessment |
+| Wireshark | Management frame analysis |
 
-## 参考
+## References
 
 - `references/wireless-lab-rules.md`
-- `../pentest-tools/` `../attack-chain/`（近源章节）
+- `../pentest-tools/` `../attack-chain/` (close-access sections)
 
-## 路由上下文
+## Routing context
 
-**上游**: MASTER R29  
-**MUST NOT**: 未授权 deauth、对非目标客户网络操作
+**Upstream**: MASTER R29
+**MUST NOT**: Perform unauthorized deauth or operate on non-target client networks
 
-## 任务完成自检
+## Task completion checklist
 
-- [ ] 是否严格锁定目标 BSSID？
-- [ ] 是否在报告中给出加固建议？
-- [ ] Checklist？
+- [ ] Is activity strictly restricted to the target BSSID?
+- [ ] Does the report include hardening recommendations?
+- [ ] Checklist?

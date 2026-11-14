@@ -9,21 +9,21 @@ Use this specialist workflow only after the master router and case scope gate ar
 
 # Hardware / Embedded Interface Security
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 确认**物理接触授权**与设备归属
-2. `NOW`: ESD/电源安全；默认只读探测
-3. `NEXT`: 联合 firmware-pentest 做镜像分析
-4. `ACT`: 外壳与调试接口识别 →  consoles → 提取
+1. `NOW`: Confirm **authorization for physical access** and device ownership
+2. `NOW`: ESD/power safety; default to read-only probing
+3. `NEXT`: Coordinate with firmware-pentest for image analysis
+4. `ACT`: Identify the enclosure and debug interfaces → consoles → extraction
 
-## 适用场景
+## Applicable Scenarios
 
-- UART / JTAG / SWD 调试口发现
-- 启动日志、root shell、引导打断
-- 配合拆机提取 Flash
-- 安全启动/加密 Flash 的可行性评估（非破坏性优先）
+- UART / JTAG / SWD debug-port discovery
+- Boot logs, root shells, and boot interruption
+- Flash extraction during authorized teardown
+- Feasibility assessment for secure boot/encrypted Flash (prioritize non-destructive methods)
 
-## 工作流
+## Workflow
 
 ```text
 □ 拆解授权设备；拍照标注测试点
@@ -33,27 +33,27 @@ Use this specialist workflow only after the master router and case scope gate ar
 □ 提取镜像 → 交接 firmware-pentest / ghidra
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 |
-|------|------|
+| Tool | Purpose |
+|------|---------|
 | USB-TTL / logic analyzer | UART |
-| J-Link / CMSIS-DAP | 调试 |
-| bus pirate / flipper（实验室） | 多协议 |
-| binwalk / flashrom | 提取 |
+| J-Link / CMSIS-DAP | Debugging |
+| bus pirate / flipper (lab) | Multi-protocol |
+| binwalk / flashrom | Extraction |
 
-## 参考
+## References
 
 - `references/debug-interface-triage.md`
 - `../firmware-pentest/` `../ot-ics/`
 
-## 路由上下文
+## Routing Context
 
-**上游**: MASTER R34  
-**MUST NOT**: 未授权拆机/损坏他人设备
+**Upstream**: MASTER R34
+**MUST NOT**: Unauthorized teardown or damage to another person's device
 
-## 任务完成自检
+## Completion Checklist
 
-- [ ] 是否记录接口电平与引脚图？
-- [ ] 镜像是否哈希保全？
-- [ ] Checklist？
+- [ ] Were interface voltage levels and the pinout recorded?
+- [ ] Was the image hash preserved?
+- [ ] Checklist complete?
