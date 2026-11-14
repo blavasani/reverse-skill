@@ -196,19 +196,19 @@ bash "<本包根目录>/kali/scripts/refresh-tool-index.sh"
 | Pentest Swarm AI | stdio | Swarm-intelligence autonomous penetration (recon→classify→exploit→report) | `pentestswarm mcp serve` |
 | idapro | 13337-13350 | IDA Pro reverse-engineering tool | `bash kali/scripts/ida-start.sh` |
 | anything-analyzer | 23816 | Browser automation + HTTP capture | `cd ~/tools/anything-analyzer && pnpm dev` |
-| jshookmcp | — | JS Hook/CDP/Network/AST | `npx -y @jshookmcp/jshook@0.3.4`（stdio） |
-| ghidra | 8765 | Free Ghidra decompiler | Ghidra GUI 启动后自动监听 |
-| burpsuite | 9876 | BurpSuite Web proxy | BurpSuite 扩展启动 |
+| jshookmcp | — | JS Hook/CDP/Network/AST | `npx -y @jshookmcp/jshook@0.3.4` (stdio) |
+| ghidra | 8765 | Free Ghidra decompiler | Listens automatically after the Ghidra GUI starts |
+| burpsuite | 9876 | BurpSuite Web proxy | Starts with the BurpSuite extension |
 
 ### MCP Priority Recommendations (Kali 2026.1)
 
 For penetration-testing scenarios, the recommended MCP priority is:
 
-1. **pentestswarm** — 全自动群体渗透，适合大规模目标（1000+ 子域名）和 Bug Bounty 持续监控
-2. **mcp-kali-server** — 最通用，可以调用 Kali 上任何终端工具
-3. **metasploitmcp** — Metasploit 专用，exploit/payload/session 管理
-4. **hexstrike-ai** — 自动化编排，适合多工具联动场景
-5. **jshookmcp** — Web/JS 逆向专用
+1. **pentestswarm** — automated swarm penetration testing for large targets (1000+ subdomains) and continuous Bug Bounty monitoring
+2. **mcp-kali-server** — general-purpose access to Kali terminal tools
+3. **metasploitmcp** — Metasploit-specific exploit, payload, and session management
+4. **hexstrike-ai** — automation orchestration for workflows involving multiple tools
+5. **jshookmcp** — dedicated Web/JS reverse engineering
 
 Set up all penetration-testing MCP tools in one step:
 ```bash
