@@ -438,22 +438,22 @@ Two-server phishing infrastructure impersonating a government agency. Full victi
 
 ---
 
-## 分析前预判：文件伪装与名字欺骗
+## Pre-Analysis Assessment: File Disguises and Misleading Names
 
-### 文件后缀不可信
+### File Extensions Are Unreliable
 
-**核心原则：永远用 `file` 命令或 magic bytes 判断文件类型，不要相信后缀名。**
+**Core principle: Always identify the file type with the `file` command or magic bytes; do not trust the extension.**
 
-常见伪装手法：
+Common disguises:
 
-| 伪装后缀 | 实际类型 | 目的 |
+| Disguised extension | Actual type | Purpose |
 |---------|---------|------|
-| `.sh` | ELF 二进制 | 让人以为是脚本，降低警惕 |
-| `.txt` | PE/ELF | 绕过简单的文件类型过滤 |
-| `.jpg`/`.png` | 可执行文件或压缩包 | 隐藏在图片中 |
-| `.dll` | 实际是 .NET assembly | 混淆分析方向 |
-| `.so` | 实际是加密 payload | 需要先解密 |
-| 无后缀 | 任何类型 | Linux 下常见 |
+| `.sh` | ELF binary | Suggest a script to lower suspicion |
+| `.txt` | PE/ELF | Bypass simple file type filters |
+| `.jpg`/`.png` | Executable or archive | Hide among images |
+| `.dll` | .NET assembly | Mislead the analysis |
+| `.so` | Encrypted payload | Require decryption first |
+| No extension | Any type | Common on Linux |
 
 ```bash
 # 正确做法：用 file 命令
@@ -465,36 +465,36 @@ xxd suspicious_file.sh | head -1
 # 7f454c46 = ELF magic
 ```
 
-### 文件名不可信
+### File Names Are Unreliable
 
-**"DriverLoader" 不一定加载驱动，"Updater" 不一定更新。**
+**"DriverLoader" does not necessarily load a driver, and "Updater" does not necessarily perform updates.**
 
-常见名字欺骗：
+Common misleading names:
 
-| 文件名暗示 | 实际行为 |
+| Implied by file name | Actual behavior |
 |-----------|---------|
-| `DriverLoader` | 可能是 ptrace 注入器 / 进程 hook |
-| `SystemService` | 可能是后门 / C2 agent |
-| `Updater` / `Update` | 可能是 dropper / 下载器 |
-| `Helper` / `Assistant` | 可能是提权工具 |
-| `lib*.so` | 可能是注入 payload |
+| `DriverLoader` | May be a ptrace injector / process hook |
+| `SystemService` | May be a backdoor / C2 agent |
+| `Updater` / `Update` | May be a dropper / downloader |
+| `Helper` / `Assistant` | May be a privilege escalation tool |
+| `lib*.so` | May be an injection payload |
 
-**分析时应该：**
-- 忽略文件名暗示，按实际代码行为判断
-- 关注 `mmap`、`ptrace`、`/proc/self/mem` 等系统调用
-- 如果看到"加载驱动"但没有 `insmod`/`init_module` 调用，说明名不副实
+**During analysis:**
+- Ignore implications of the file name and assess actual code behavior.
+- Inspect system calls and interfaces such as `mmap`, `ptrace`, and `/proc/self/mem`.
+- A claim to load a driver without `insmod`/`init_module` calls may be misleading.
 
-### 静态分析不够时的动态补充
+### Dynamic Analysis When Static Analysis Is Insufficient
 
-纯静态分析只能看到代码骨架。以下场景必须配合动态分析：
+Static analysis alone reveals only the code structure. The following scenarios require dynamic analysis as well:
 
-| 场景 | 推荐动态方法 |
+| Scenario | Recommended dynamic method |
 |------|-------------|
-| 代码有解密/解压逻辑 | 在解密后下断点，dump 明文 |
-| 大量间接调用（函数指针表） | strace/ltrace 跟踪实际调用 |
-| 疑似反调试 | 先 strace 看 ptrace 调用 |
-| 内嵌 shellcode/payload | QEMU 用户态模拟执行 |
-| 网络通信协议未知 | tcpdump/Wireshark 抓包 |
+| Code contains decryption/decompression logic | Set a breakpoint after decryption and dump the plaintext |
+| Many indirect calls (function pointer tables) | Trace actual calls with strace/ltrace |
+| Suspected anti-debugging | First inspect ptrace calls with strace |
+| Embedded shellcode/payload | Emulate execution with QEMU user mode |
+| Unknown network protocol | Capture traffic with tcpdump/Wireshark |
 
 ```bash
 # strace 跟踪系统调用（重点关注）
@@ -511,24 +511,24 @@ strace ./binary 2>&1 | grep ptrace
 # 如果看到 ptrace(PTRACE_TRACEME, ...) 说明有反调试
 ```
 
-### 进程注入/保护壳类样本的常见模式
+### Common Patterns in Process Injection and Packed Samples
 
-这类样本（如 `LinYuDriverLoader`）通常：
+These samples (such as `LinYuDriverLoader`) typically:
 
-1. **不是真正加载内核驱动**（需要 root 权限，大多数场景没有）
-2. **实际行为是进程注入**：
-   - `ptrace` attach 到目标进程
-   - 通过 `/proc/<pid>/mem` 读写目标内存
-   - `mmap` 映射 shellcode 到目标进程空间
-3. **内嵌加密 payload**：
-   - 运行时解密一段 shellcode
-   - 解密后的 payload 才是真正的 hook 代码
-4. **反调试保护**：
-   - `ptrace(PTRACE_TRACEME)` 自追踪
-   - 时间检测（`clock_gettime` 前后对比）
-   - `/proc/self/status` 检查 TracerPid
+1. **Do not actually load a kernel driver** (which requires root privileges, often unavailable).
+2. **Perform process injection**:
+   - Attach to the target process with `ptrace`.
+   - Read and write target memory through `/proc/<pid>/mem`.
+   - Map shellcode into the target process address space with `mmap`.
+3. **Embed an encrypted payload**:
+   - Decrypt shellcode at runtime.
+   - Use the decrypted payload as the actual hook code.
+4. **Use anti-debugging protection**:
+   - Self-trace with `ptrace(PTRACE_TRACEME)`.
+   - Check timing by comparing `clock_gettime` readings.
+   - Check TracerPid in `/proc/self/status`.
 
-**分析策略**：
+**Analysis strategy**:
 ```text
 1. file 命令确认真实类型
 2. strings 看有没有明显的路径/库名/错误信息
