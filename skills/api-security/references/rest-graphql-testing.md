@@ -1,8 +1,8 @@
-# REST + GraphQL 深度测试
+# In-Depth REST + GraphQL Testing
 
-## GraphQL 安全测试完整清单
+## GraphQL Security Testing Checklist
 
-### 内省探测（三级降级）
+### Introspection Probes (Three Fallback Levels)
 
 ```graphql
 # Level 1 — 标准内省
@@ -15,7 +15,7 @@
 { __type(name: "Query") { name } }
 ```
 
-### DoS 攻击向量
+### DoS Attack Vectors
 
 ```graphql
 # 别名过载
@@ -31,7 +31,7 @@ query { __schema { types { fields { type { fields { type { fields { name } } } }
 query { __typename @skip(if: false) @include(if: true) ... }
 ```
 
-### 授权测试
+### Authorization Testing
 
 ```graphql
 # GET 突变（CSRF）
@@ -44,16 +44,16 @@ GET /graphql?query=mutation+{+deleteUser(id:1)+}
 ]
 ```
 
-## REST API 深度测试
+## In-Depth REST API Testing
 
-### 方法操控矩阵
+### Method Manipulation Matrix
 
-| 端点 | GET | POST | PUT | PATCH | DELETE | OPTIONS |
+| Endpoint | GET | POST | PUT | PATCH | DELETE | OPTIONS |
 |------|-----|------|-----|-------|--------|---------|
-| /users | ✓ 可访问 | 测试越权创建 | 测试批量覆盖 | 测试字段注入 | 测试级联删除 | 信息泄漏 |
-| /users/me | 基准 | — | 测试自我提权 | 测试字段追加 | 测试自我删除 | — |
+| /users | ✓ Accessible | Test unauthorized creation | Test bulk overwrites | Test field injection | Test cascading deletion | Information disclosure |
+| /users/me | Baseline | — | Test self-privilege escalation | Test adding fields | Test self-deletion | — |
 
-### 参数注入
+### Parameter Injection
 
 ```json
 // NoSQL 注入
@@ -79,9 +79,9 @@ GET /api/users?role=user&role=admin
       file:///etc/passwd
 ```
 
-## 自动化工具链
+## Automated Toolchain
 
-### Vespasian（流量驱动规范生成）
+### Vespasian (Traffic-Driven Specification Generation)
 
 ```bash
 # 从无头浏览器爬取
@@ -94,7 +94,7 @@ vespasian import --file traffic.har
 vespasian export --format openapi3 --output api-spec.yaml
 ```
 
-### Entropy（LLM 攻击生成）
+### Entropy (LLM Attack Generation)
 
 ```bash
 # 基于 spec 的自动测试
@@ -111,7 +111,7 @@ entropy --spec api-spec.yaml --live --persona all
 entropy --spec api-spec.yaml --ci --watch
 ```
 
-### api.sh（8 阶段管道）
+### api.sh (Eight-Phase Pipeline)
 
 ```bash
 # Phase 1-3: GraphQL 侦察 → 利用 → 爆破

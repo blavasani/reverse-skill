@@ -1,8 +1,8 @@
-# JWT + OAuth 2.0 安全测试
+# JWT + OAuth 2.0 Security Testing
 
-## JWT 攻击面
+## JWT Attack Surface
 
-### 1. 算法混淆
+### 1. Algorithm Confusion
 
 ```bash
 # alg:none — 最经典
@@ -19,7 +19,7 @@ python3 jwt_tool.py <JWT> -X k -pk public.pem
 # 服务端用 kid 指向的文件内容做 HMAC 密钥
 ```
 
-### 2. jwt_tool 完整用法
+### 2. jwt_tool Usage
 
 ```bash
 # 全面扫描
@@ -39,7 +39,7 @@ python3 jwt_tool.py <JWT> -X k -pk public.pem
 python3 jwt_tool.py <JWT> -X i
 ```
 
-### 3. 手工 JWT 篡改
+### 3. Manual JWT Tampering
 
 ```python
 import jwt
@@ -59,7 +59,7 @@ new_token = base64url_encode(header) + '.' + base64url_encode(payload) + '.'
 new_token = jwt.encode(payload, 'secret', algorithm='HS256')
 ```
 
-## OAuth 2.0 攻击面
+## OAuth 2.0 Attack Surface
 
 ### Authorization Code Grant
 
@@ -80,7 +80,7 @@ new_token = jwt.encode(payload, 'secret', algorithm='HS256')
    回调页面加载外部资源 → Referer 头包含 code/token
 ```
 
-### Implicit Grant（已废弃但仍有部署）
+### Implicit Grant (Deprecated but Still Deployed)
 
 ```text
 1. access_token 在 URL fragment → Referer 泄漏
@@ -96,7 +96,7 @@ new_token = jwt.encode(payload, 'secret', algorithm='HS256')
 3. 无 client 限速 → 暴力枚举
 ```
 
-### 通用 OAuth 测试
+### General OAuth Tests
 
 ```text
 □ 测试 scope 提升: scope=read → scope=read%20write
@@ -106,7 +106,7 @@ new_token = jwt.encode(payload, 'secret', algorithm='HS256')
 □ Token 在日志/URL/Referer 中泄漏
 ```
 
-## 工具
+## Tools
 
 ```bash
 # JWT 测试
