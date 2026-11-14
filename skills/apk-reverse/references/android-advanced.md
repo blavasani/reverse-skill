@@ -1,12 +1,12 @@
-# Android 高级逆向参考
+# Advanced Android Reverse Engineering Reference
 
-> 覆盖 Native SO 分析、Frida 高级用法、SSL Pinning 绕过、Root 检测对抗、加固脱壳、Flutter/React Native 逆向。
+> Covers native SO analysis, advanced Frida usage, SSL pinning bypass, root detection bypass, unpacking protected apps, and Flutter/React Native reverse engineering.
 
 ---
 
-## Native SO 逆向
+## Native SO Reverse Engineering
 
-### 分析流程
+### Analysis Workflow
 
 ```text
 1. 从 APK 中提取 .so 文件
@@ -32,7 +32,7 @@
    - 从 crypto 库函数（AES/MD5/SHA）调用追踪
 ```
 
-### JNI 函数注册
+### JNI Function Registration
 
 ```c
 // 静态注册：函数名 = Java_包名_类名_方法名
@@ -53,7 +53,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 }
 ```
 
-### IDA 中分析 JNI 的技巧
+### JNI Analysis Techniques in IDA
 
 ```text
 1. 导入 JNI 类型库
@@ -71,9 +71,9 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 
 ---
 
-## Frida 高级用法
+## Advanced Frida Usage
 
-### Hook Native 函数
+### Hooking Native Functions
 
 ```javascript
 // Hook libc 函数
@@ -103,7 +103,7 @@ Interceptor.attach(targetFunc, {
 });
 ```
 
-### Hook Java 方法
+### Hooking Java Methods
 
 ```javascript
 Java.perform(function() {
@@ -130,7 +130,7 @@ Java.perform(function() {
 });
 ```
 
-### 内存搜索与修改
+### Memory Search and Modification
 
 ```javascript
 // 搜索内存中的字符串
@@ -155,9 +155,9 @@ Memory.patchCode(addr, 4, function(code) {
 
 ---
 
-## SSL Pinning 绕过
+## SSL Pinning Bypass
 
-### 通用方案（推荐）
+### General Approach (Recommended)
 
 ```javascript
 // Frida 通用 SSL Pinning 绕过
@@ -187,18 +187,18 @@ Java.perform(function() {
 });
 ```
 
-### 各框架绕过
+### Framework-Specific Bypasses
 
-| 框架 | 绕过方法 |
+| Framework | Bypass Method |
 |------|---------|
-| OkHttp3 | Hook `CertificatePinner.check` 返回空 |
-| Retrofit | 同 OkHttp（底层用 OkHttp） |
-| Volley | Hook `HurlStack` 的 SSL 工厂 |
-| Flutter | Hook `dart:io` 的 `SecurityContext`（需要特殊脚本） |
+| OkHttp3 | Hook `CertificatePinner.check` to return empty |
+| Retrofit | Same as OkHttp (uses OkHttp underneath) |
+| Volley | Hook the `HurlStack` SSL factory |
+| Flutter | Hook `dart:io` `SecurityContext` (requires a specialized script) |
 | React Native | Hook `OkHttpClientProvider` |
 | WebView | Hook `WebViewClient.onReceivedSslError` |
 
-### Flutter 专项
+### Flutter-Specific
 
 ```javascript
 // Flutter SSL Pinning 绕过（需要找到 ssl_verify_peer_cert 函数）
@@ -216,20 +216,20 @@ Memory.scan(flutter_lib, Module.findModuleByName("libflutter.so").size, pattern,
 
 ---
 
-## Root 检测绕过
+## Root Detection Bypass
 
-### 常见检测方式
+### Common Detection Methods
 
-| 检测方式 | 绕过方法 |
+| Detection Method | Bypass Method |
 |---------|---------|
-| 检查 `/system/app/Superuser.apk` | Hook `File.exists()` 返回 false |
-| 检查 `su` 命令 | Hook `Runtime.exec()` 拦截 su 调用 |
-| 检查 `/proc/self/mounts` | Hook 文件读取，过滤 magisk 相关 |
+| Check `/system/app/Superuser.apk` | Hook `File.exists()` to return false |
+| Check the `su` command | Hook `Runtime.exec()` to intercept su calls |
+| Check `/proc/self/mounts` | Hook file reads and filter magisk-related entries |
 | SafetyNet/Play Integrity | Magisk Hide / Zygisk + Shamiko |
-| 检查 Magisk 包名 | 随机化 Magisk 包名 |
-| 检查 `/data/adb/` | Hook `opendir`/`access` |
+| Check the Magisk package name | Randomize the Magisk package name |
+| Check `/data/adb/` | Hook `opendir`/`access` |
 
-### Frida 通用 Root 绕过
+### General Frida Root Bypass
 
 ```javascript
 Java.perform(function() {
@@ -259,20 +259,20 @@ Java.perform(function() {
 
 ---
 
-## 加固/壳识别与脱壳
+## Protection/Packer Identification and Unpacking
 
-### 常见加固厂商
+### Common Protection Vendors
 
-| 加固 | 识别特征 | 脱壳方式 |
+| Protection | Identifiers | Unpacking Method |
 |------|---------|---------|
-| 360 加固 | `libjiagu.so`、`com.stub.StubApp` | FART / Frida dump dex |
-| 腾讯乐固 | `libshell*.so`、`com.tencent.StubShell` | FART / BlackDex |
-| 梆梆加固 | `libDexHelper.so`、`com.secneo.apkwrapper` | FART |
-| 爱加密 | `libexec.so`、`s.h.e.l.l` | Frida dump |
-| 网易易盾 | `libnesec.so` | Frida dump |
-| 娜迦 | `libnaga.so` | Frida dump |
+| 360 Jiagu | `libjiagu.so`, `com.stub.StubApp` | FART / Frida dump dex |
+| Tencent Legu | `libshell*.so`, `com.tencent.StubShell` | FART / BlackDex |
+| Bangbang Jiagu | `libDexHelper.so`, `com.secneo.apkwrapper` | FART |
+| Ijiami | `libexec.so`, `s.h.e.l.l` | Frida dump |
+| NetEase Yidun | `libnesec.so` | Frida dump |
+| Naga | `libnaga.so` | Frida dump |
 
-### 通用脱壳方法
+### General Unpacking Methods
 
 ```text
 方法 1: FART（ART 环境脱壳）
@@ -293,7 +293,7 @@ Java.perform(function() {
 - 读取 dex 内存区域并保存
 ```
 
-### Frida DEX Dump 脚本
+### Frida DEX Dump Script
 
 ```javascript
 Java.perform(function() {
@@ -312,7 +312,7 @@ Java.perform(function() {
 
 ---
 
-## React Native / Flutter 逆向
+## React Native / Flutter Reverse Engineering
 
 ### React Native
 
@@ -337,29 +337,29 @@ Java.perform(function() {
 
 ---
 
-## 工具速查
+## Tool Reference
 
-| 工具 | 用途 | 安装 |
+| Tool | Purpose | Installation |
 |------|------|------|
-| jadx | Java 反编译 | 已在 bootstrap 中 |
-| apktool | 解包/重打包 | 已在 bootstrap 中 |
-| Frida | 动态 Hook | `pip install frida-tools` |
-| Objection | Frida 封装（更易用） | `pip install objection` |
-| MobSF | 自动化移动安全分析 | Docker 部署 |
-| BlackDex | 免 root 脱壳 | APK 安装 |
-| FART | ART 脱壳 | 刷入 ROM 或 Frida 版 |
-| hermes-dec | Hermes 字节码反编译 | npm 安装 |
-| reFlutter | Flutter 逆向辅助 | pip 安装 |
-| Magisk + Shamiko | Root 隐藏 | 刷入 |
+| jadx | Java decompilation | Included in bootstrap |
+| apktool | Unpacking/repacking | Included in bootstrap |
+| Frida | Dynamic hooking | `pip install frida-tools` |
+| Objection | Frida wrapper (easier to use) | `pip install objection` |
+| MobSF | Automated mobile security analysis | Docker deployment |
+| BlackDex | Unpacking without root | Install APK |
+| FART | ART unpacking | Flash ROM or use the Frida version |
+| hermes-dec | Hermes bytecode decompilation | Install with npm |
+| reFlutter | Flutter reverse engineering support | Install with pip |
+| Magisk + Shamiko | Root hiding | Flash |
 
 ---
 
-## 参考资源
+## References
 
-| 资源 | 说明 | 链接 |
+| Resource | Description | Link |
 |------|------|------|
-| OWASP MASTG | 移动安全测试指南 | https://mas.owasp.org/ |
-| FridaBypassKit | 通用绕过框架 | https://github.com/okankurtuluss/FridaBypassKit |
-| SSL-bypass | 通用 SSL Pinning 绕过 | https://github.com/0xCD4/SSL-bypass |
-| awesome-frida | Frida 资源合集 | https://github.com/dweinstein/awesome-frida |
-| Android Security Awesome | Android 安全资源 | https://github.com/ashishb/android-security-awesome |
+| OWASP MASTG | Mobile security testing guide | https://mas.owasp.org/ |
+| FridaBypassKit | General-purpose bypass framework | https://github.com/okankurtuluss/FridaBypassKit |
+| SSL-bypass | General-purpose SSL pinning bypass | https://github.com/0xCD4/SSL-bypass |
+| awesome-frida | Frida resource collection | https://github.com/dweinstein/awesome-frida |
+| Android Security Awesome | Android security resources | https://github.com/ashishb/android-security-awesome |

@@ -1,13 +1,13 @@
-# APK 安全测试速查
+# APK Security Testing Checklist
 
-> 基于 OWASP MASTG（Mobile Application Security Testing Guide）整理。
-> 覆盖静态分析、动态分析、网络通信、数据存储、认证授权、代码保护六大维度。
+> Based on the OWASP MASTG (Mobile Application Security Testing Guide).
+> Covers six dimensions: static analysis, dynamic analysis, network communication, data storage, authentication and authorization, and code protection.
 
 ---
 
-## 静态分析检查清单
+## Static Analysis Checklist
 
-### Manifest 审计
+### Manifest Audit
 
 ```text
 □ android:debuggable="true" → 可调试（生产环境不应出现）
@@ -19,7 +19,7 @@
 □ minSdkVersion 过低 → 可能缺少安全特性
 ```
 
-### 代码审计关键点
+### Code Audit Priorities
 
 ```text
 □ 硬编码密钥/Token（搜索 "key"、"secret"、"password"、"api_key"）
@@ -33,7 +33,7 @@
 □ 隐式 Intent 泄露（sendBroadcast 未指定包名）
 ```
 
-### 第三方库审计
+### Third-Party Library Audit
 
 ```text
 □ 过时的 OkHttp/Retrofit 版本（已知漏洞）
@@ -45,21 +45,21 @@
 
 ---
 
-## 动态分析检查清单
+## Dynamic Analysis Checklist
 
-### Frida Hook 优先目标
+### Priority Frida Hook Targets
 
-| 目标 | Hook 点 | 目的 |
+| Target | Hook Point | Purpose |
 |------|---------|------|
-| 登录认证 | `LoginActivity.login()` | 观察凭证处理 |
-| 签名生成 | `*Sign*`、`*sign*`、`*encrypt*` | 还原签名算法 |
-| SSL Pinning | `CertificatePinner.check` | 绕过抓包 |
-| Root 检测 | `*root*`、`*su*`、`*magisk*` | 绕过检测 |
-| 加密操作 | `javax.crypto.Cipher` | 提取密钥/IV |
-| Token 存储 | `SharedPreferences.getString` | 观察 token 读写 |
-| 网络请求 | `OkHttpClient.newCall` | 观察请求构造 |
+| Login authentication | `LoginActivity.login()` | Observe credential handling |
+| Signature generation | `*Sign*`, `*sign*`, `*encrypt*` | Recover the signature algorithm |
+| SSL Pinning | `CertificatePinner.check` | Bypass pinning for traffic capture |
+| Root detection | `*root*`, `*su*`, `*magisk*` | Bypass detection |
+| Encryption operations | `javax.crypto.Cipher` | Extract keys/IVs |
+| Token storage | `SharedPreferences.getString` | Observe token reads and writes |
+| Network requests | `OkHttpClient.newCall` | Observe request construction |
 
-### 常用 Frida 一行命令
+### Common Frida One-Liners
 
 ```bash
 # 追踪所有加密操作
@@ -75,7 +75,7 @@ frida-trace -U -f com.target.app -j '*SharedPreferences*!*'
 frida-trace -U -f com.target.app -i 'Java_*'
 ```
 
-### Objection 快速命令
+### Objection Quick Commands
 
 ```bash
 # 连接
@@ -93,9 +93,9 @@ sqlite connect <db_path>         # 连接数据库
 
 ---
 
-## 网络通信安全
+## Network Communication Security
 
-### 抓包配置
+### Traffic Capture Configuration
 
 ```text
 方法 1: 系统代理 + Burp/mitmproxy
@@ -113,7 +113,7 @@ sqlite connect <db_path>         # 连接数据库
 - 不受代理/VPN 限制
 ```
 
-### 检查项
+### Checks
 
 ```text
 □ 是否使用 HTTPS（所有 API 调用）
@@ -130,48 +130,48 @@ sqlite connect <db_path>         # 连接数据库
 
 ---
 
-## 数据存储安全
+## Data Storage Security
 
-### 检查位置
+### Locations to Check
 
-| 位置 | 风险 | 检查命令 |
+| Location | Risk | Check Command |
 |------|------|---------|
-| SharedPreferences | 明文存储 token/密码 | `adb shell cat /data/data/pkg/shared_prefs/*.xml` |
-| SQLite 数据库 | 未加密的敏感数据 | `adb pull /data/data/pkg/databases/` |
-| 外部存储 | 任何应用可读 | `adb shell ls /sdcard/Android/data/pkg/` |
-| 应用日志 | 泄露调试信息 | `adb logcat \| grep pkg` |
-| 备份文件 | allowBackup=true | `adb backup -f backup.ab pkg` |
-| 键盘缓存 | 输入历史 | 检查 `inputType` 是否为 `textPassword` |
-| 截图保护 | 敏感页面可截图 | 检查 `FLAG_SECURE` |
+| SharedPreferences | Plaintext token/password storage | `adb shell cat /data/data/pkg/shared_prefs/*.xml` |
+| SQLite database | Unencrypted sensitive data | `adb pull /data/data/pkg/databases/` |
+| External storage | Readable by any application | `adb shell ls /sdcard/Android/data/pkg/` |
+| Application logs | Debug information leakage | `adb logcat \| grep pkg` |
+| Backup files | allowBackup=true | `adb backup -f backup.ab pkg` |
+| Keyboard cache | Input history | Check whether `inputType` is `textPassword` |
+| Screenshot protection | Sensitive screens can be captured | Check `FLAG_SECURE` |
 
-### 加密存储方案对比
+### Encrypted Storage Comparison
 
-| 方案 | 安全性 | 说明 |
+| Approach | Security | Description |
 |------|--------|------|
-| SharedPreferences 明文 | ❌ | root 后直接读取 |
-| EncryptedSharedPreferences | ✓ | AndroidX Security 库 |
-| SQLCipher | ✓ | 加密 SQLite |
-| Android Keystore | ✓✓ | 硬件级密钥保护 |
-| 自定义 AES 加密 | ⚠️ | 取决于密钥管理 |
+| Plaintext SharedPreferences | ❌ | Directly readable after root |
+| EncryptedSharedPreferences | ✓ | AndroidX Security library |
+| SQLCipher | ✓ | Encrypted SQLite |
+| Android Keystore | ✓✓ | Hardware-level key protection |
+| Custom AES encryption | ⚠️ | Depends on key management |
 
 ---
 
-## 认证与授权
+## Authentication and Authorization
 
-### 常见漏洞
+### Common Vulnerabilities
 
-| 漏洞 | 测试方法 |
+| Vulnerability | Test Method |
 |------|---------|
-| 弱密码策略 | 尝试 123456、password 等 |
-| 无锁定机制 | 暴力破解登录接口 |
-| Token 不过期 | 登出后重放旧 token |
-| 越权访问 | 修改请求中的 user_id |
-| 短信验证码可爆破 | 4/6 位数字无频率限制 |
-| OAuth 配置错误 | redirect_uri 可篡改 |
-| 生物认证绕过 | Hook BiometricPrompt |
-| 设备绑定绕过 | 修改 device_id |
+| Weak password policy | Try 123456, password, and similar values |
+| No lockout mechanism | Brute-force the login endpoint |
+| Non-expiring token | Replay the old token after logout |
+| Unauthorized access | Modify `user_id` in the request |
+| Brute-forceable SMS verification code | 4/6-digit code without rate limiting |
+| OAuth misconfiguration | `redirect_uri` can be modified |
+| Biometric authentication bypass | Hook BiometricPrompt |
+| Device binding bypass | Modify `device_id` |
 
-### 测试 Payload
+### Test Payload
 
 ```bash
 # 越权测试
@@ -192,23 +192,23 @@ done
 
 ---
 
-## 代码保护评估
+## Code Protection Assessment
 
-| 保护措施 | 检测方法 | 绕过难度 |
+| Protection | Detection Method | Bypass Difficulty |
 |---------|---------|---------|
-| ProGuard 混淆 | jadx 查看类名是否为 a/b/c | 低（只是重命名） |
-| 字符串加密 | 搜索解密函数，Hook 获取明文 | 中 |
-| 反调试 | 尝试 attach debugger | 中（Frida 可绕过） |
-| Root 检测 | 在 root 设备上运行 | 中（通用脚本绕过） |
-| 模拟器检测 | 在模拟器上运行 | 低-中 |
-| 完整性校验 | 修改 APK 后安装 | 中（patch 校验函数） |
-| 加固/壳 | 查看入口类和 .so | 中-高（需脱壳） |
-| Native 保护 | 核心逻辑在 .so | 高（需 IDA 分析） |
-| VMP 虚拟化 | 代码被虚拟化执行 | 极高 |
+| ProGuard obfuscation | Use jadx to check whether class names are a/b/c | Low (renaming only) |
+| String encryption | Search for decryption functions and hook them to obtain plaintext | Medium |
+| Anti-debugging | Try to attach debugger | Medium (Frida can bypass it) |
+| Root detection | Run on a rooted device | Medium (general-purpose script bypass) |
+| Emulator detection | Run on an emulator | Low-medium |
+| Integrity check | Modify and install the APK | Medium (patch the check function) |
+| Protection/packer | Inspect the entry class and .so | Medium-high (requires unpacking) |
+| Native protection | Core logic is in .so | High (requires IDA analysis) |
+| VMP virtualization | Code runs under virtualization | Very high |
 
 ---
 
-## 快速测试流程（30 分钟）
+## Quick Test Workflow (30 Minutes)
 
 ```text
 1. [5min] 解包 + Manifest 审计
