@@ -1,21 +1,21 @@
-# 内核驱动逆向参考
+# Kernel Driver Reverse Engineering Reference
 
-> 覆盖 Windows/Linux 内核驱动逆向、Rootkit 分析、C/C++ 二进制模式识别。
+> Covers Windows/Linux kernel driver reverse engineering, rootkit analysis, and C/C++ binary pattern recognition.
 
 ---
 
-## Windows 驱动逆向
+## Windows Driver Reverse Engineering
 
-### 驱动类型
+### Driver Types
 
-| 类型 | 特征 | 分析重点 |
+| Type | Characteristics | Analysis Focus |
 |------|------|---------|
-| WDM (Windows Driver Model) | 老式驱动，手动管理 IRP | DriverEntry → 设备创建 → Dispatch 例程 |
-| KMDF (Kernel Mode Driver Framework) | 现代框架，事件驱动 | EvtDriverDeviceAdd → Queue → I/O 回调 |
-| WDF (Windows Driver Foundation) | KMDF + UMDF 统称 | 看 WdfDriverCreate 调用 |
-| Minifilter | 文件系统过滤驱动 | FltRegisterFilter → Pre/Post 回调 |
+| WDM (Windows Driver Model) | Legacy driver, manually manages IRPs | DriverEntry → device creation → Dispatch routines |
+| KMDF (Kernel Mode Driver Framework) | Modern, event-driven framework | EvtDriverDeviceAdd → Queue → I/O callbacks |
+| WDF (Windows Driver Foundation) | Collective term for KMDF + UMDF | Inspect WdfDriverCreate calls |
+| Minifilter | File system filter driver | FltRegisterFilter → Pre/Post callbacks |
 
-### WDM 驱动分析流程
+### WDM Driver Analysis Workflow
 
 ```text
 1. 找 DriverEntry（入口点）
@@ -40,7 +40,7 @@
    - 未检查 IOCTL 权限 → 非特权用户可调用
 ```
 
-### IOCTL 编码解析
+### IOCTL Encoding Analysis
 
 ```python
 # 解析 IOCTL code
@@ -60,25 +60,25 @@ decode_ioctl(0x80002034)
 # DevType=0x8000 Func=0x80D Method=BUFFERED Access=ANY
 ```
 
-### IDA 插件
+### IDA Plugins
 
-| 插件 | 用途 | 链接 |
+| Plugin | Purpose | Link |
 |------|------|------|
-| **Driver Buddy Reloaded** | 自动识别 IOCTL、Dispatch、设备名 | https://github.com/VoidSec/DriverBuddyReloaded |
-| **WinDbg + IDA** | 内核调试 + 静态分析配合 | 内置 |
-| **FLIRT/Lumina** | 识别 WDK 库函数 | IDA 内置 |
+| **Driver Buddy Reloaded** | Automatically identifies IOCTLs, Dispatch routines, and device names | https://github.com/VoidSec/DriverBuddyReloaded |
+| **WinDbg + IDA** | Combines kernel debugging and static analysis | Built-in |
+| **FLIRT/Lumina** | Identifies WDK library functions | Built into IDA |
 
-### 参考文章
+### Reference Articles
 
-- [Windows Drivers RE Methodology (VoidSec)](https://voidsec.com/windows-drivers-reverse-engineering-methodology/) — 最完整的 WDM 驱动逆向方法论
-- [Driver Reversing 101](https://eversinc33.com/posts/driver-reversing.html) — WDM vs KMDF 对比
-- [Methodology of Reversing Vulnerable Killer Drivers](https://whiteknightlabs.com/2025/10/28/methodology-of-reversing-vulnerable-killer-drivers/) — 漏洞驱动分析
+- [Windows Drivers RE Methodology (VoidSec)](https://voidsec.com/windows-drivers-reverse-engineering-methodology/) — Comprehensive WDM driver reverse-engineering methodology
+- [Driver Reversing 101](https://eversinc33.com/posts/driver-reversing.html) — WDM vs KMDF comparison
+- [Methodology of Reversing Vulnerable Killer Drivers](https://whiteknightlabs.com/2025/10/28/methodology-of-reversing-vulnerable-killer-drivers/) — Vulnerable-driver analysis
 
 ---
 
-## Linux 内核模块逆向
+## Linux Kernel Module Reverse Engineering
 
-### LKM (Loadable Kernel Module) 结构
+### LKM (Loadable Kernel Module) Structure
 
 ```text
 关键函数：
@@ -91,7 +91,7 @@ decode_ioctl(0x80002034)
 - struct block_device_operations → 块设备操作
 ```
 
-### 分析流程
+### Analysis Workflow
 
 ```text
 1. 确认是内核模块
@@ -116,62 +116,62 @@ decode_ioctl(0x80002034)
    - 修改 VFS 层 → 隐藏文件
 ```
 
-### Rootkit 常见技术
+### Common Rootkit Techniques
 
-| 技术 | 特征 | 检测方法 |
+| Technique | Characteristics | Detection Method |
 |------|------|---------|
-| syscall table hook | 修改 `sys_call_table` 条目 | 对比内存中的表与磁盘上的 vmlinux |
-| VFS hook | 修改 `file_operations` 函数指针 | 检查 fops 指针是否指向内核代码段外 |
-| Netfilter hook | `nf_register_net_hook` | 遍历 netfilter hook 链表 |
-| kprobe/ftrace hook | 注册 kprobe 或 ftrace 回调 | 检查 ftrace 注册列表 |
-| eBPF rootkit | 加载恶意 BPF 程序 | `bpftool prog list` |
-| DKOM | 直接修改内核对象（进程链表） | 遍历 task_struct 链表对比 /proc |
+| syscall table hook | Modify `sys_call_table` entries | Compare the in-memory table with vmlinux on disk |
+| VFS hook | Modify `file_operations` function pointers | Check whether fops pointers point outside the kernel code section |
+| Netfilter hook | `nf_register_net_hook` | Traverse the netfilter hook list |
+| kprobe/ftrace hook | Register a kprobe or ftrace callback | Check the ftrace registration list |
+| eBPF rootkit | Load a malicious BPF program | `bpftool prog list` |
+| DKOM | Directly modify kernel objects (the process list) | Traverse the task_struct list and compare it with /proc |
 
-### 工具
+### Tools
 
-| 工具 | 用途 |
+| Tool | Purpose |
 |------|------|
-| `crash` | 内核 dump 分析 |
-| `volatility3` | 内存取证（Linux profile） |
-| `dmesg` / `journalctl` | 内核日志 |
-| `lsmod` / `/proc/modules` | 已加载模块列表 |
-| `modinfo` | 模块元信息 |
-| `strace` | 系统调用跟踪（用户态视角） |
+| `crash` | Kernel dump analysis |
+| `volatility3` | Memory forensics (Linux profile) |
+| `dmesg` / `journalctl` | Kernel logs |
+| `lsmod` / `/proc/modules` | Loaded-module list |
+| `modinfo` | Module metadata |
+| `strace` | System-call tracing (user-mode perspective) |
 
 ---
 
-## C/C++ 逆向模式识别
+## C/C++ Reverse-Engineering Pattern Recognition
 
-### C 语言常见模式
+### Common C Patterns
 
-| 源码模式 | 反汇编特征 |
+| Source Pattern | Disassembly Characteristics |
 |---------|-----------|
-| `if-else` | `cmp` + `jcc`（条件跳转） |
-| `switch-case` | 跳转表（`jmp [rax*8 + table]`）或连续 `cmp` |
-| `for` 循环 | `cmp` + `jl/jle` + 循环体 + `inc/add` + `jmp` 回跳 |
-| `while` 循环 | 条件判断在循环顶部 |
-| `do-while` | 条件判断在循环底部 |
-| 函数指针调用 | `call rax` 或 `call [reg+offset]` |
-| `struct` 访问 | `[reg+固定偏移]`（如 `[rdi+0x10]`） |
-| `malloc` + 使用 | `call malloc` → 返回值存入寄存器 → 后续用该寄存器+偏移访问 |
-| 字符串比较 | `call strcmp` 或 `repe cmpsb` |
+| `if-else` | `cmp` + `jcc` (conditional jump) |
+| `switch-case` | Jump table (`jmp [rax*8 + table]`) or consecutive `cmp` instructions |
+| `for` loop | `cmp` + `jl/jle` + loop body + `inc/add` + `jmp` back |
+| `while` loop | Condition checked at the top of the loop |
+| `do-while` | Condition checked at the bottom of the loop |
+| Function-pointer call | `call rax` or `call [reg+offset]` |
+| `struct` access | `[reg+固定偏移]` (for example, `[rdi+0x10]`) |
+| `malloc` + use | `call malloc` → store the return value in a register → access later using that register + offset |
+| String comparison | `call strcmp` or `repe cmpsb` |
 
-### C++ 特有模式
+### C++-Specific Patterns
 
-| 源码模式 | 反汇编特征 |
+| Source Pattern | Disassembly Characteristics |
 |---------|-----------|
-| **虚函数调用** | `mov rax, [rcx]`（取 vtable）→ `call [rax+offset]`（调用虚函数） |
-| **构造函数** | 分配内存 → 写入 vtable 指针 → 初始化成员 |
-| **析构函数** | 清理成员 → 可能调用 `operator delete` |
-| **this 指针** | 第一个参数（rcx/rdi）是对象指针 |
-| **继承** | vtable 中包含父类虚函数 + 子类覆盖 |
-| **多重继承** | 对象内有多个 vtable 指针（偏移不同） |
-| **RTTI** | vtable 前面有 `type_info` 指针 |
-| **异常处理** | `__cxa_throw` / `_CxxThrowException` |
-| **STL 容器** | `std::vector`: `{begin, end, capacity}` 三指针结构 |
-| **std::string** | 小字符串优化（SSO）：短串内联，长串堆分配 |
+| **Virtual-function call** | `mov rax, [rcx]` (load vtable) → `call [rax+offset]` (call virtual function) |
+| **Constructor** | Allocate memory → write vtable pointer → initialize members |
+| **Destructor** | Clean up members → possibly call `operator delete` |
+| **this pointer** | The first argument (rcx/rdi) is the object pointer |
+| **Inheritance** | The vtable contains parent virtual functions and child overrides |
+| **Multiple inheritance** | The object contains multiple vtable pointers at different offsets |
+| **RTTI** | A `type_info` pointer precedes the vtable |
+| **Exception handling** | `__cxa_throw` / `_CxxThrowException` |
+| **STL containers** | `std::vector`: `{begin, end, capacity}` three-pointer structure |
+| **std::string** | Small-string optimization (SSO): short strings inline, long strings heap-allocated |
 
-### vtable 逆向方法
+### vtable Reverse-Engineering Method
 
 ```text
 1. 找 vtable
@@ -191,7 +191,7 @@ decode_ioctl(0x80002034)
    - 对 `call [rax+offset]` 添加注释标明调用的虚函数
 ```
 
-### 结构体恢复
+### Structure Recovery
 
 ```text
 方法 1：从访问模式推断
@@ -211,30 +211,30 @@ decode_ioctl(0x80002034)
 
 ---
 
-## 常见编译器特征
+## Common Compiler Characteristics
 
-| 编译器 | 识别特征 |
+| Compiler | Identification Characteristics |
 |--------|---------|
-| MSVC | `_security_cookie` 检查、`__fastcall` 调用约定、Rich Header |
-| GCC | `__stack_chk_fail`、`-fstack-protector`、`.note.GNU-stack` |
-| Clang/LLVM | 类似 GCC 但优化模式不同、`__asan_*`（如果开了 sanitizer） |
-| MinGW | GCC 特征 + Windows API 调用 |
-| AOSP Clang | Android 特有的 `__android_log_print`、PGO 标记 |
+| MSVC | `_security_cookie` checks, `__fastcall` calling convention, Rich Header |
+| GCC | `__stack_chk_fail`, `-fstack-protector`, `.note.GNU-stack` |
+| Clang/LLVM | Similar to GCC but with different optimization patterns, `__asan_*` (if sanitizer is enabled) |
+| MinGW | GCC characteristics + Windows API calls |
+| AOSP Clang | Android-specific `__android_log_print`, PGO markers |
 
-### 优化级别识别
+### Optimization-Level Identification
 
-| 优化级别 | 特征 |
+| Optimization Level | Characteristics |
 |---------|------|
-| -O0 | 大量冗余 mov、每个变量都在栈上、函数不内联 |
-| -O1 | 基本优化、部分变量在寄存器 |
-| -O2 | 循环展开、函数内联、尾调用优化 |
-| -O3 / -Os | 激进内联、向量化（SIMD）、代码难读 |
-| PGO | 热路径优化、冷代码分离到 `.text.cold` |
-| LTO | 跨模块内联、全局死代码消除 |
+| -O0 | Many redundant mov instructions, every variable on the stack, no function inlining |
+| -O1 | Basic optimization, some variables in registers |
+| -O2 | Loop unrolling, function inlining, tail-call optimization |
+| -O3 / -Os | Aggressive inlining, vectorization (SIMD), difficult-to-read code |
+| PGO | Hot-path optimization, cold code separated into `.text.cold` |
+| LTO | Cross-module inlining, global dead-code elimination |
 
 ---
 
-## 内核调试环境
+## Kernel Debugging Environment
 
 ### Windows
 
@@ -275,24 +275,24 @@ lx-dmesg             # 内核日志
 
 ---
 
-## Agent 动作锚点（Issue #65 U–AV）
+## Agent Action Anchors (Issue #65 U–AV)
 
-与 `references/nonpe-format-cookbook.md` §5 对齐（短表，不替代上文流程）：
+Aligned with `references/nonpe-format-cookbook.md` §5 (a short table, not a replacement for the workflow above):
 
-| ID | 动作 | Evidence |
+| ID | Action | Evidence |
 |----|------|----------|
-| AG | `DriverEntry` 短 → 扫 `MajorFunction` 非空槽，优先 DEVICE_CONTROL/CREATE | `E-driver-irp-handlers` |
-| AH | 建立 IOCTL 控制码 → handler 表与 METHOD_* | `E-driver-ioctl` |
-| AI | 疑 BYOVD：对照公开脆弱驱动列表；记名/哈希/签名与调用意图；**不写 exploit 步骤** | `E-driver-byovd` |
+| AG | Short `DriverEntry` → scan nonempty `MajorFunction` slots, prioritizing DEVICE_CONTROL/CREATE | `E-driver-irp-handlers` |
+| AH | Build an IOCTL control-code → handler table and record METHOD_* | `E-driver-ioctl` |
+| AI | Suspected BYOVD: compare public vulnerable-driver lists; record name/hash/signature and call intent; **do not write exploit steps** | `E-driver-byovd` |
 
-## 参考资源
+## Reference Resources
 
-| 资源 | 说明 | 链接 |
+| Resource | Description | Link |
 |------|------|------|
-| VoidSec 驱动逆向方法论 | Windows WDM 驱动完整分析流程 | https://voidsec.com/windows-drivers-reverse-engineering-methodology/ |
-| Elastic Rootkit 系列 | Linux Rootkit 分类+检测 | https://security-labs.elastic.co/security-labs/linux-rootkits-1-hooked-on-linux |
-| Driver Buddy Reloaded | IDA 驱动分析插件 | https://github.com/VoidSec/DriverBuddyReloaded |
-| LOLDrivers | 已知漏洞驱动列表 | https://www.loldrivers.io/ |
-| Windows Driver Samples | 微软官方驱动示例 | https://github.com/microsoft/Windows-driver-samples |
-| Linux Kernel Module Programming | 内核模块开发教程 | https://sysprog21.github.io/lkmpg/ |
-| Trail of Bits - Devirtualizing C++ | vtable 逆向方法 | https://blog.trailofbits.com/2017/02/13/devirtualizing-c-with-binary-ninja/ |
+| VoidSec Driver Reverse Engineering Methodology | Complete Windows WDM driver analysis workflow | https://voidsec.com/windows-drivers-reverse-engineering-methodology/ |
+| Elastic Rootkit Series | Linux rootkit classification and detection | https://security-labs.elastic.co/security-labs/linux-rootkits-1-hooked-on-linux |
+| Driver Buddy Reloaded | IDA driver-analysis plugin | https://github.com/VoidSec/DriverBuddyReloaded |
+| LOLDrivers | Known vulnerable-driver list | https://www.loldrivers.io/ |
+| Windows Driver Samples | Official Microsoft driver samples | https://github.com/microsoft/Windows-driver-samples |
+| Linux Kernel Module Programming | Kernel-module development tutorial | https://sysprog21.github.io/lkmpg/ |
+| Trail of Bits - Devirtualizing C++ | vtable reverse-engineering method | https://blog.trailofbits.com/2017/02/13/devirtualizing-c-with-binary-ninja/ |
