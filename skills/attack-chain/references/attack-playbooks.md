@@ -1,10 +1,10 @@
-# 攻击链 Playbook 速查
+# Attack Chain Playbook Quick Reference
 
-> 按目标类型选择对应 playbook，每个 playbook 定义了从初始访问到目标达成的标准路径。
+> Select a playbook by target type. Each playbook defines a standard path from initial access to the objective.
 
 ---
 
-## Playbook 1: 外网 Web 应用 → 域控
+## Playbook 1: Internet-Facing Web Application → Domain Controller
 
 ```
 1. 子域名枚举 + 端口扫描
@@ -20,11 +20,11 @@
 11. 获取域控权限
 ```
 
-**关键工具链**: subfinder → httpx → nuclei → sqlmap/sstimap → frp → nmap → mimikatz → crackmapexec → bloodhound → certipy
+**Key tool chain**: subfinder → httpx → nuclei → sqlmap/sstimap → frp → nmap → mimikatz → crackmapexec → bloodhound → certipy
 
 ---
 
-## Playbook 2: 钓鱼 → 内网渗透
+## Playbook 2: Phishing → Internal-Network Penetration
 
 ```
 1. 目标员工信息收集（LinkedIn/脉脉）
@@ -39,11 +39,11 @@
 10. 目标达成
 ```
 
-**关键工具链**: theHarvester → gophish → msfvenom/cobalt-strike → mimikatz → bloodhound
+**Key tool chain**: theHarvester → gophish → msfvenom/cobalt-strike → mimikatz → bloodhound
 
 ---
 
-## Playbook 3: 近源渗透 → 内网
+## Playbook 3: Close-Access Penetration → Internal Network
 
 ```
 1. 物理踩点（WiFi 信号、门禁类型、USB 口）
@@ -55,11 +55,11 @@
 5. 后续同 Playbook 1 的步骤 5-11
 ```
 
-**关键工具链**: fluxion/aircrack-ng → rubber-ducky → frp → nmap → crackmapexec
+**Key tool chain**: fluxion/aircrack-ng → rubber-ducky → frp → nmap → crackmapexec
 
 ---
 
-## Playbook 4: 云环境渗透
+## Playbook 4: Cloud-Environment Penetration
 
 ```
 1. 云资产发现（子域名 → CNAME → 云服务商）
@@ -72,11 +72,11 @@
 8. 数据获取
 ```
 
-**关键工具链**: subfinder → nuclei(ssrf) → aws-cli → pacu → ScoutSuite
+**Key tool chain**: subfinder → nuclei(ssrf) → aws-cli → pacu → ScoutSuite
 
 ---
 
-## Playbook 5: Bug Bounty / SRC 快速打点
+## Playbook 5: Bug Bounty / SRC Rapid Assessment
 
 ```
 1. 资产收集（子域名 + 端口 + JS 文件）
@@ -92,11 +92,11 @@
 5. 编写 PoC + 提交报告
 ```
 
-**关键工具链**: subfinder → httpx → nuclei → arjun → sqlmap → xsstrike → burpsuite
+**Key tool chain**: subfinder → httpx → nuclei → arjun → sqlmap → xsstrike → burpsuite
 
 ---
 
-## Playbook 6: AD CS 证书攻击
+## Playbook 6: AD CS Certificate Attack
 
 ```
 1. 发现 AD CS 服务（certipy find）
@@ -107,20 +107,20 @@
 6. DCSync 导出所有凭据
 ```
 
-**关键工具链**: certipy → rubeus → mimikatz → secretsdump
+**Key tool chain**: certipy → rubeus → mimikatz → secretsdump
 
 ---
 
-## 通用决策矩阵
+## General Decision Matrix
 
-| 当前状态 | 下一步优先级 |
+| Current state | Next priority |
 |---------|-------------|
-| 只有目标域名 | 子域名枚举 → 端口扫描 → Web 指纹 |
-| 有 Web 漏洞 | 获取 shell → 内网信息收集 |
-| 有低权限 shell | 提权 → 凭据提取 |
-| 有一台内网机器 | 搭隧道 → 内网扫描 → 横向 |
-| 有域用户凭据 | BloodHound → 找攻击路径 |
-| 有域管 Hash | DCSync → Golden Ticket |
-| 有云 AK/SK | 枚举权限 → 提权 → 数据获取 |
-| 钓鱼上线 | 本地提权 → 凭据 → 横向 |
-| 近源接入 | 内网扫描 → 同上 |
+| Only the target domain is known | Enumerate subdomains → scan ports → identify Web fingerprints |
+| A Web vulnerability exists | Obtain a shell → collect internal-network information |
+| A low-privilege shell is available | Escalate privileges → extract credentials |
+| An internal-network machine is available | Set up a tunnel → scan the internal network → move laterally |
+| Domain-user credentials are available | BloodHound → find attack paths |
+| A domain-admin hash is available | DCSync → Golden Ticket |
+| Cloud AK/SK is available | Enumerate permissions → escalate privileges → obtain data |
+| A phishing session is active | Escalate local privileges → obtain credentials → move laterally |
+| Close-access entry is available | Scan the internal network → same as above |
