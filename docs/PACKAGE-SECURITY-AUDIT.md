@@ -1,105 +1,105 @@
-# reverse-skill 包内安全审计（可执行面）
+# reverse-skill Package Security Audit (Executable Surface)
 
-> 2026-09-03 复审：已扩展到 Git 对象、payload 身份、符号链接、二进制 allowlist、GitHub Action 固定与 Gradle Wrapper 验证。详见 [Repository security review — 2026-09-03](SECURITY-REVIEW-2026-09-03.md)。
+> 2026-09-03 review: The review was extended to Git objects, payload identity, symbolic links, the binary allowlist, GitHub Action pinning, and Gradle Wrapper verification. See [Repository security review — 2026-09-03](SECURITY-REVIEW-2026-09-03.md).
 
-> 日期：2026-08-02
-> 范围：`skills/**/scripts`、`skills/scripts`、`kali/scripts`、`burp-mcp-full` 可执行脚本与 bootstrap 清单  
-> **不含**：`src-hunter` / payloader 等**教学型 payload 文档**（其 DROP/注入样例属方法论，非自动执行）
+> Date: 2026-08-02
+> Scope: Executable scripts and bootstrap manifests in `skills/**/scripts`, `skills/scripts`, `kali/scripts`, and `burp-mcp-full`
+> **Excluded**: **Instructional payload documentation** such as `src-hunter` / payloader (its DROP/injection examples are methodology, not automatically executed)
 
-## 结论（总评）
+## Overall Conclusion
 
-| 级别 | 判定 |
+| Category | Assessment |
 |------|------|
-| **后门 / 主动删库 / 格式化磁盘** | **未发现** |
-| **管道下载执行（curl\|sh / IEX DownloadString）** | **未发现** |
-| **硬编码云密钥 / 私钥** | **未发现**（文档中的 `sk-` / `BEGIN RSA` 为检测示例） |
-| **供应链残余风险** | **已部分加固（中低→低）**：钉死 `@latest`；GitHub 下载支持 **manifest SHA256 + API digest** |
+| **Backdoors / deliberate database deletion / disk formatting** | **Not found** |
+| **Piped download and execution (curl\|sh / IEX DownloadString)** | **Not found** |
+| **Hardcoded cloud keys / private keys** | **Not found** (`sk-` / `BEGIN RSA` in documentation are detection examples) |
+| **Residual supply-chain risk** | **Partially hardened (medium-low → low)**: pinned `@latest`; GitHub downloads support **manifest SHA256 + API digest** |
 
-**总评：可执行 skill 脚本面当前未发现植入式后门或「一键删库」逻辑；危险删除均限定在工具重装临时目录 / case 输出目录。**
+**Overall assessment: No implanted backdoors or "one-click database deletion" logic were found in the executable skill scripts at the time of the audit; potentially destructive deletions were confined to tool reinstallation temporary directories / case output directories.**
 
-### 2026-07-18 加固（本提交）
+### 2026-07-18 Hardening (This Commit)
 
-| 项 | 动作 |
+| Item | Action |
 |----|------|
 | jshookmcp | `@latest` → `@0.3.4` |
 | pentestswarm | `@latest` / docker `:latest` → `@v0.1.0` / `:v0.1.0` |
 | jadx | pin `v1.5.6` + `assetSha256` |
 | apktool | pin `v3.0.2` + `assetSha256` |
-| bootstrap PS/sh | 下载后 `Assert-DownloadedFileIntegrity` / `verify_sha256`；优先 manifest 哈希，其次 GitHub `digest`；失败删文件并中止 |
-| 未钉哈希的 release | 仍可安装，但 **WARN** 并打印实际 sha256 |
+| bootstrap PS/sh | Run `Assert-DownloadedFileIntegrity` / `verify_sha256` after downloading; prefer the manifest hash, then the GitHub `digest`; delete the file and abort on failure |
+| Releases without pinned hashes | Can still be installed, but emit **WARN** and print the actual sha256 |
 
-### 2026-08-02 安全修复
+### 2026-08-02 Security Fixes
 
-| 项 | 修复 |
+| Item | Fix |
 |----|------|
-| Kali quick setup | 使用 `getent` 解析 sudo 用户 home，移除 `eval` |
-| Frida process listing | 使用 `frida-ps` 参数数组，移除内联 Python 代码拼接 |
-| Burp MCP token | 使用受限临时文件原子替换，POSIX 文件权限固定为 `0600` |
-| Burp MCP bridge | 按 MCP 换行消息解析，并在 Burp 启动后按需重连 |
-| Anything Analyzer MCP | bootstrap 默认启用 bearer auth，并通过可选宿主适配器注册凭据 |
-| IDA MCP startup | 逐个结束旧进程，避免多 PID 参数展开错误 |
+| Kali quick setup | Resolve the sudo user's home with `getent`; remove `eval` |
+| Frida process listing | Use a `frida-ps` argument array; remove inline Python code concatenation |
+| Burp MCP token | Replace atomically using a restricted temporary file, with POSIX permissions fixed at `0600` |
+| Burp MCP bridge | Parse MCP newline-delimited messages and reconnect as needed after Burp starts |
+| Anything Analyzer MCP | Enable bearer auth by default during bootstrap and register credentials through an optional host adapter |
+| IDA MCP startup | Terminate old processes individually to avoid multi-PID argument expansion errors |
 
-## 扫描方法
+## Scan Method
 
-对可执行扩展（`.ps1` / `.sh` / `.py` / `.js` / `.java`）检索：
+Search executable file types (`.ps1` / `.sh` / `.py` / `.js` / `.java`) for:
 
 - `Invoke-Expression` / `IEX` / `FromBase64String` / `DownloadString`
-- `curl|bash` / `wget|sh` 管道执行
-- `DROP DATABASE|TABLE`、`rm -rf /`、`Remove-Item ... C:\Windows`
-- 反弹 shell 形态（`/dev/tcp` 滥用、`TcpClient` 回连）
-- 隐藏窗口启动（复核用途）
+- Piped execution via `curl|bash` / `wget|sh`
+- `DROP DATABASE|TABLE`, `rm -rf /`, `Remove-Item ... C:\Windows`
+- Reverse shell patterns (`/dev/tcp` abuse, `TcpClient` callbacks)
+- Hidden window launches (review their purpose)
 
-第二轮：人工阅读 `bootstrap-reverse.ps1/.sh` 下载与删除路径、`mcp-bridge.js`、图表/密码学 Python 脚本。
+Second pass: manually review download and deletion paths in `bootstrap-reverse.ps1/.sh`, `mcp-bridge.js`, and diagram/cryptography Python scripts.
 
-## 发现明细
+## Findings
 
-### 1. 删除操作（均为预期清理，非删库）
+### 1. Deletion Operations (Expected Cleanup, Not Database Deletion)
 
-| 位置 | 行为 | 风险 |
+| Location | Behavior | Risk |
 |------|------|------|
-| `bootstrap-reverse.ps1` `Expand-ArchiveIntoDirectory` | 删除目标安装目录后重装；删除 `%TEMP%\reverse-bootstrap-*` | 仅工具安装路径，非用户业务库 |
-| `bootstrap-reverse.ps1` anything-analyzer | 失败时 `Remove-Item node_modules` 后 `pnpm install` | 限定克隆的工具仓 |
-| `apk-reverse/scripts/decode.*` | 清理任务输出目录 jadx/apktool out | 限定 task 根 |
-| `case-init.ps1` | 清理临时目录 | 临时 |
-| `bootstrap-reverse.sh` | 同类 temp / 安装目标清理 | 同左 |
+| `bootstrap-reverse.ps1` `Expand-ArchiveIntoDirectory` | Delete the target installation directory before reinstalling; delete `%TEMP%\reverse-bootstrap-*` | Tool installation paths only, not user production databases |
+| `bootstrap-reverse.ps1` anything-analyzer | On failure, run `Remove-Item node_modules` followed by `pnpm install` | Confined to the cloned tool repository |
+| `apk-reverse/scripts/decode.*` | Clean the task output directories jadx/apktool out | Confined to the task root |
+| `case-init.ps1` | Clean temporary directories | Temporary |
+| `bootstrap-reverse.sh` | Similar temp / installation target cleanup | Same as above |
 
-**未发现** 针对 `C:\`、系统目录、任意数据库连接串上的 `DROP`/`TRUNCATE` 可执行逻辑。
+**No executable logic was found** targeting `C:\` or system directories, or executing `DROP`/`TRUNCATE` against arbitrary database connection strings.
 
-### 2. 网络行为（工具自举，非 C2）
+### 2. Network Behavior (Tool Bootstrap, Not C2)
 
-| 位置 | 行为 | 说明 |
+| Location | Behavior | Notes |
 |------|------|------|
-| `bootstrap-reverse.ps1` | `api.github.com` 拉 release；`Invoke-WebRequest` 下 zip/jar | 仓库名来自 **manifest 白名单** |
-| `bootstrap-reverse.sh` | `curl` / `git clone` / `pipx` / `npm` | 同上 |
-| `mcp-bridge.js` | 仅 `127.0.0.1:9876` HTTP → Burp | 本地环回 |
-| `ToolDiscovery.ps1` | 探测 `http://host:port/mcp` | 健康检查 |
-| `kali/.../tool-discovery.sh` | `(echo >/dev/tcp/$host/$port)` | **端口探测**，非反弹 shell |
+| `bootstrap-reverse.ps1` | Fetch releases from `api.github.com`; download zip/jar files with `Invoke-WebRequest` | Repository names come from the **manifest allowlist** |
+| `bootstrap-reverse.sh` | `curl` / `git clone` / `pipx` / `npm` | Same as above |
+| `mcp-bridge.js` | HTTP to Burp via `127.0.0.1:9876` only | Local loopback |
+| `ToolDiscovery.ps1` | Probe `http://host:port/mcp` | Health check |
+| `kali/.../tool-discovery.sh` | `(echo >/dev/tcp/$host/$port)` | **Port probe**, not a reverse shell |
 
-### 3. 隐藏窗口
+### 3. Hidden Windows
 
-| 位置 | 用途 |
+| Location | Purpose |
 |------|------|
-| `bootstrap-reverse.ps1` `Start-Process ... -WindowStyle Hidden` | 后台启动 `pnpm dev`（anything-analyzer） |
-| `ida-reverse/scripts/start.ps1` | 启动 IDA 相关进程（需保持后台） |
+| `bootstrap-reverse.ps1` `Start-Process ... -WindowStyle Hidden` | Start `pnpm dev` in the background (anything-analyzer) |
+| `ida-reverse/scripts/start.ps1` | Start IDA-related processes (must remain in the background) |
 
-属服务启动形态，未发现隐藏下载恶意载荷。
+These are service startup patterns; no hidden malicious payload downloads were found.
 
-### 4. 文档 / payload 中的「危险字样」（非自动执行）
+### 4. "Dangerous Terms" in Documentation / Payloads (Not Automatically Executed)
 
-`pentest-tools/src-hunter`、`attack-chain` 等 **Markdown/JSON 教学材料** 含 SQL 注入、`DROP` 示例、日志清理 **红队方法论**。  
-这些 **不会被 bootstrap 或 master-route 自动执行**；执行依赖 AI/人工在**已授权 scope** 下选用。
+**Markdown/JSON instructional materials** such as `pentest-tools/src-hunter` and `attack-chain` contain **red-team methodology** involving SQL injection, `DROP` examples, and log cleanup.
+These **are not automatically executed by bootstrap or master-route**; execution depends on an AI or human selecting them within an **authorized scope**.
 
-相关约束见：`ops/scope-contract.md`、`ops/skill-supply-chain.md`、`field-journal/precedent-*.md`。
+See the relevant constraints: `ops/scope-contract.md`, `ops/skill-supply-chain.md`, and `field-journal/precedent-*.md`.
 
-### 5. 供应链残余风险（建议后续加固，非已证实后门）
+### 5. Residual Supply-Chain Risk (Further Hardening Recommended, Not a Confirmed Backdoor)
 
-| 项 | 风险 | 建议 |
+| Item | Risk | Recommendation |
 |----|------|------|
-| `bootstrap-manifest.json` 中 `@jshookmcp/jshook@0.3.4`、`pentestswarm@v0.1.0` | 标签漂移 / 供应链投毒面 | 钉死版本号 + 校验和 |
-| GitHub release zip **无 SHA256 校验** | 被替换 release 时难以及时发现 | manifest 增加 `assetSha256` 并在 bootstrap 校验 |
-| `npm install -g` / `pip` 默认源 | 依赖生态固有风险 | 仅装 manifest 能力；生产环境用私有源/锁定 |
+| `@jshookmcp/jshook@0.3.4`, `pentestswarm@v0.1.0` in `bootstrap-manifest.json` | Tag drift / supply-chain poisoning exposure | Pin versions + checksums |
+| GitHub release zip **without SHA256 verification** | A replaced release may be difficult to detect promptly | Add `assetSha256` to the manifest and verify it during bootstrap |
+| Default sources for `npm install -g` / `pip` | Risks inherent in dependency ecosystems | Install only manifest capabilities; use private sources / locking in production |
 
-## 可执行脚本清单（审计基线）
+## Executable Script Inventory (Audit Baseline)
 
 ```
 skills/scripts/*.ps1|*.sh + lib/ToolDiscovery.ps1
@@ -113,16 +113,16 @@ kali/scripts/*
 burp-mcp-full/mcp-bridge.js (+ Java 扩展源)
 ```
 
-## 建议的持续检查
+## Recommended Ongoing Checks
 
 ```powershell
 # 可执行面快速体检（示例）
 rg -n "Invoke-Expression|FromBase64String|DownloadString|rm -rf /|DROP DATABASE" skills/scripts skills/*/scripts kali/scripts burp-mcp-full -g "*.ps1" -g "*.sh" -g "*.py" -g "*.js"
 ```
 
-新增 skill 的 **可执行脚本** 合入前应再跑本清单；仅 Markdown 方法论变更不强制。
+Run this checklist again before merging **executable scripts** for a new skill; Markdown-only methodology changes do not require it.
 
-## 签署
+## Sign-Off
 
-- 审计执行：仓库本地静态扫描 + 关键路径人工复核  
-- 结果：无后门 / 无自动删库；供应链加固列为后续改进项  
+- Audit performed: Local static scan of the repository + manual review of critical paths
+- Result: No backdoors / no automatic database deletion; supply-chain hardening listed as a follow-up improvement
