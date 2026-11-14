@@ -1,70 +1,70 @@
-# OLLVM 反混淆 / Obfuscator-LLVM Deobfuscation
+# Obfuscator-LLVM Deobfuscation
 
-> 面向 APK .so、ELF 二进制和控制流平坦化场景的 OLLVM 脱密工作流。
-> 工具与变种信息基于 2026 年社区活跃项目调研，非训练记忆。
-> 适用：Android NDK 加固、CTF 逆向、加壳 .so 分析、商业混淆器对抗。
+> OLLVM deobfuscation workflow for APK .so files, ELF binaries, and control-flow flattening.
+> Tool and variant information is based on research into active community projects in 2026, not training memory.
+> Applies to Android NDK hardening, CTF reverse engineering, packed .so analysis, and commercial obfuscators.
 
 ---
 
-## 0. 快速决策：我该用哪个工具？
+## 0. Quick Decision: Which Tool Should I Use?
 
-根据你的环境和对目标混淆类型的判断，直接对号入座：
+Choose directly based on your environment and assessment of the target's obfuscation type:
 
-| 你的情况 | 首选工具 | 备选 | 说明 |
+| Your situation | First choice | Alternative | Notes |
 |---------|---------|------|------|
-| 有 IDA Pro 7.5-7.7 + Hex-Rays，想一键去平坦化 | **obpo-plugin** | d810-ng | obpo 用 microcode + 数据流 + 混合执行，效果最强，但是云插件（需联网，核心闭源） |
-| 有 IDA Pro（任意较新版本），想本地一站式反混淆 | **d810-ng** | D-810 原版 | 本地、开源、集成 Z3，支持 OLLVM/Tigress/Hodur/Approov 多变种 |
-| 有 Binary Ninja | **ollvm-breaker** | — | 针对 Android .so 实战（libvdog 等加固样本） |
-| 无 IDA/BN，纯脚本，目标 x86/x64 | **ollvm-unflattener** (Miasm) | angr deflat | 基于 Miasm 符号执行，BFS 多层处理 |
-| 无 IDA/BN，纯脚本，目标 x86/x64 | **ollvm-unflattener** (Miasm) | angr deflat | 基于 Miasm 符号执行，BFS 多层处理 |
-| 纯 Python 符号执行，CTF 场景 | **angr** Deobfuscator | Triton | 不依赖 GUI，脚本化 |
-| 目标是 ARM64 .so，无 IDA | **deollvm** (Unicorn) | angr | 基于 Unicorn 的 ARM64 deflat |
-| 遇到 BR 混淆（间接分支） | **DeObfBR** | 设置数据段只读 | Goron/Arkari 风格的 BR 混淆可被数据段只读简单对抗 |
-| 遇到 Tigress 混淆 | d810-ng `UnflattenerSwitchCase`/`UnflattenerTigressIndirect` | — | d810-ng 内置 Tigress 专用 unflattener |
+| IDA Pro 7.5-7.7 + Hex-Rays available; one-click deflattening wanted | **obpo-plugin** | d810-ng | obpo uses microcode + data flow + hybrid execution and has the strongest results, but it is a cloud plugin (network required, core closed-source) |
+| IDA Pro (any recent version) available; local all-in-one deobfuscation wanted | **d810-ng** | Original D-810 | Local, open source, integrates Z3, and supports OLLVM/Tigress/Hodur/Approov variants |
+| Binary Ninja available | **ollvm-breaker** | — | Designed for practical Android .so analysis (hardened samples such as libvdog) |
+| No IDA/BN; scripting only; x86/x64 target | **ollvm-unflattener** (Miasm) | angr deflat | Miasm-based symbolic execution with multi-layer BFS processing |
+| No IDA/BN; scripting only; x86/x64 target | **ollvm-unflattener** (Miasm) | angr deflat | Miasm-based symbolic execution with multi-layer BFS processing |
+| Pure Python symbolic execution in a CTF scenario | **angr** Deobfuscator | Triton | Scriptable without a GUI dependency |
+| ARM64 .so target without IDA | **deollvm** (Unicorn) | angr | Unicorn-based ARM64 deflat |
+| BR obfuscation (indirect branches) encountered | **DeObfBR** | Make the data segment read-only | Goron/Arkari-style BR obfuscation can be countered simply by making the data segment read-only |
+| Tigress obfuscation encountered | d810-ng `UnflattenerSwitchCase`/`UnflattenerTigressIndirect` | — | d810-ng includes a dedicated Tigress unflattener |
 
-> **核心建议：** 优先用 **d810-ng**（本地、维护活跃、变种覆盖广）。云服务可用时 **obpo-plugin** 效果最好。两者都失败再上 **angr/Miasm** 符号执行做定制化处理。
+> **Key recommendation:** Prefer **d810-ng** (local, actively maintained, broad variant coverage). When cloud services are available, **obpo-plugin** has the strongest results. If both fail, use **angr/Miasm** symbolic execution for customized processing.
 
 ---
 
-## 1. 现代 OLLVM 变种生态（2026 社区调研）
+## 1. Modern OLLVM Variant Ecosystem (2026 Community Survey)
 
-OLLVM 早已不只是 2017 年那个原始仓库。以下是目前活跃的混淆器分支，**脱密前必须先判断目标是哪个变种**，因为不同变种的对抗手段差异很大：
+OLLVM is no longer just the original 2017 repository. The following obfuscator branches are currently active; **identify the target variant before deobfuscation**, because countermeasures differ substantially between variants:
 
-### 1.1 混淆器分支谱系
+### 1.1 Obfuscator Branch Lineage
 
-| 变种 | 基准 LLVM | 相比原始 OLLVM 的新增特性 | 对抗要点 |
+| Variant | Base LLVM | Features added over original OLLVM | Countermeasure notes |
 |------|----------|----------------------|---------|
-| **Obfuscator** (原始) | 3.3~4.0 | sub + bcf + fla（三大基础 pass） | 标准工具均可处理 |
-| **Hikari** | 6~8 | Anti Class Dump、Function Call Obfuscate、Function Wrapper、Indirect Branching、Split BB、String Encryption | 需先解密字符串 + 修复间接跳转 |
-| **Hikari-LLVM15** | 15~19 | + Anti Debugging、Anti Hook、Constant Encryption | 已闭源；Constant Encryption 增加静态分析难度 |
-| **goron** | 7~10 | Indirect Branch/Call/GlobalVariable | ⚠️ Goron 风格间接混淆可被「设置数据段只读」简单对抗 |
-| **Arkari** (komimoe/Hikari) | 14~latest | 基于 goron，持续维护 | 同 goron，数据段只读即可部分对抗 |
-| **Pluto** | 14 | MBA Obfuscation、Random CF、Split BB、**Trap Angr**（专门坑 angr） | ⚠️ Trap Angr pass 会让 angr 符号执行失效，需换工具或绕陷阱 |
-| **Polaris** (原 Pluto) | 16 | Alias Access、Indirect Branch/Call、String Encryption、Merge Function、Linear MBA、Dirty Bytes Insertion、Function Splitting、Junk Insertion | 综合 Hikari+Pluto，最棘手，需分层处理 |
-| **O-MVLL** | open-obfuscator | Python 驱动 pass manager；Anti Hooking、Arithmetic(MBA)、BB Duplicate、CF Breaking、Function Outline、Indirect Branch/Call、Opaque Constants | 现代 Android 加固常用，Python 配置易定制 |
-| **amice** (Rust) | Rust 实现 | 全套 + VM Flatten、Instruction Virtualization、Delayed Offset Loading、Parameter Aggregation | 含 VM 化，需 VM handler 还原而非单纯 deflat |
-| **VMP 系** (SmallVmp/VMPilot/xVMP/VMPacker) | — | 指令虚拟化 | **不属于 OLLVM 范畴**，需 VM 逆向，参考 VM 专用工具 |
+| **Obfuscator** (original) | 3.3~4.0 | sub + bcf + fla (three core passes) | Standard tools can handle it |
+| **Hikari** | 6~8 | Anti Class Dump, Function Call Obfuscate, Function Wrapper, Indirect Branching, Split BB, String Encryption | Decrypt strings and repair indirect jumps first |
+| **Hikari-LLVM15** | 15~19 | + Anti Debugging, Anti Hook, Constant Encryption | Closed-source; Constant Encryption makes static analysis harder |
+| **goron** | 7~10 | Indirect Branch/Call/GlobalVariable | ⚠️ Goron-style indirect obfuscation can be countered simply by making the data segment read-only |
+| **Arkari** (komimoe/Hikari) | 14~latest | Based on goron, continuously maintained | As with goron, a read-only data segment provides a partial countermeasure |
+| **Pluto** | 14 | MBA Obfuscation, Random CF, Split BB, **Trap Angr** (designed specifically to thwart angr) | ⚠️ The Trap Angr pass breaks angr symbolic execution; switch tools or bypass the trap |
+| **Polaris** (formerly Pluto) | 16 | Alias Access, Indirect Branch/Call, String Encryption, Merge Function, Linear MBA, Dirty Bytes Insertion, Function Splitting, Junk Insertion | Combines Hikari+Pluto; the most difficult and requires layered processing |
+| **O-MVLL** | open-obfuscator | Python-driven pass manager; Anti Hooking, Arithmetic(MBA), BB Duplicate, CF Breaking, Function Outline, Indirect Branch/Call, Opaque Constants | Common in modern Android hardening; Python configuration is easy to customize |
+| **amice** (Rust) | Rust implementation | Full set + VM Flatten, Instruction Virtualization, Delayed Offset Loading, Parameter Aggregation | Includes virtualization; restore VM handlers rather than only deflattening |
+| **VMP family** (SmallVmp/VMPilot/xVMP/VMPacker) | — | Instruction virtualization | **Outside OLLVM scope**; requires VM reverse engineering and dedicated VM tools |
 
-### 1.2 关键判断线索
+### 1.2 Key Identification Clues
 
-- **Trap Angr**（Pluto/Polaris）：如果 angr 跑着跑着爆炸或路径爆炸，怀疑目标用了 Trap Angr pass → 改用 d810-ng 或 Unicorn 动态方法
-- **Goron/Arkari 间接跳转**：如果分发器用间接跳转（BR x8 而非 switch），先尝试把相关数据段设为只读，间接跳转目标常变成可静态求解
-- **Constant Encryption**（Hikari-LLVM15/Polaris/O-MVLL）：常量在运行期解密，纯静态看不到真实值 → 需要 Unicorn 动态执行解密 stub
-- **VM Flatten**（amice）：控制流变成 VM dispatch loop，**不要当普通 fla 处理**，需要先识别 VM handler 表
+- **Trap Angr** (Pluto/Polaris): If angr crashes during execution or suffers path explosion, suspect the target uses the Trap Angr pass → switch to d810-ng or a dynamic Unicorn method
+- **Goron/Arkari indirect jumps**: If the dispatcher uses indirect jumps (BR x8 instead of switch), first try making the relevant data segment read-only; indirect jump targets often become statically solvable
+- **Constant Encryption** (Hikari-LLVM15/Polaris/O-MVLL): Constants are decrypted at runtime and their real values are invisible to purely static analysis → dynamically execute the decryption stub with Unicorn
+- **VM Flatten** (amice): Control flow becomes a VM dispatch loop; **do not treat it as ordinary fla**; identify the VM handler table first
 
 ---
 
-## 2. OLLVM 混淆类型检测
+## 2. Detecting OLLVM Obfuscation Types
 
-OLLVM 三大核心 pass 的识别特征：
+Signatures of OLLVM's three core passes:
 
-### 2.1 控制流平坦化 (Control Flow Flattening / `fla`)
+### 2.1 Control Flow Flattening (`fla`)
 
-**IDA 视图特征：**
-- 函数入口先跳转到唯一的分发器（dispatcher）块
-- 主逻辑被拆成多个基本块，每个块末尾跳回分发器
-- 分发器通过**状态变量**（state variable）决定下一个要执行的块
-- 巨大的 `switch` 结构，各 case 之间无逻辑关联
+**IDA view characteristics:**
+- The function entry first jumps to a unique dispatcher block
+- The main logic is split into multiple basic blocks, each of which jumps back to the dispatcher at the end
+- The dispatcher uses a **state variable** to choose the next block to execute
+- A large `switch` structure whose cases have no logical relationship
 
 ```
 Original:             OLLVM flattened:
@@ -77,17 +77,17 @@ Original:             OLLVM flattened:
                            2 → block_C
 ```
 
-**变种形态（d810-ng 识别的多种 dispatcher）：**
-- O-LLVM：switch / if-chain + 状态变量
-- Tigress：`m_jtbl`（switch-case）或 `m_ijmp`（间接跳转，需 `goto_table_info` 配置）
-- Hodur (PlugX)：嵌套 `while(1)` 状态机，`jnz state, #CONST`，**无 switch 分发器**
-- Approov：`while(v8 != C)`，状态常量集中在 `0xF6000–0xF6FFF`
+**Variant forms (multiple dispatchers recognized by d810-ng):**
+- O-LLVM: switch / if-chain + state variable
+- Tigress: `m_jtbl` (switch-case) or `m_ijmp` (indirect jump, requiring `goto_table_info` configuration)
+- Hodur (PlugX): nested `while(1)` state machine, `jnz state, #CONST`, with **no switch dispatcher**
+- Approov: `while(v8 != C)`, with state constants concentrated in `0xF6000–0xF6FFF`
 
-### 2.2 虚假控制流 (Bogus Control Flow / `bcf`)
+### 2.2 Bogus Control Flow (`bcf`)
 
-- 每个真实分支间插入**不可达假分支**
-- 假分支用**不透明谓词**保护（条件恒真/恒假，但静态分析无法直接证明）
-- 大量死代码膨胀函数体积
+- **Unreachable fake branches** are inserted between real branches
+- Fake branches are protected by **opaque predicates** (conditions that are always true or false but cannot be directly proven by static analysis)
+- Large amounts of dead code inflate the function body
 
 ```c
 // 经典不透明谓词：x(x+1) 必为偶数，编译器证明不了
@@ -98,9 +98,9 @@ if (x * (x + 1) % 2 == 0) {
 }
 ```
 
-### 2.3 指令替换 (Instruction Substitution / `sub`) → MBA
+### 2.3 Instruction Substitution (`sub`) → MBA
 
-- 简单算术/位运算替换为等价复杂表达式（MBA, Mixed Boolean-Arithmetic）
+- Simple arithmetic and bitwise operations are replaced with equivalent complex expressions (MBA, Mixed Boolean-Arithmetic)
 
 ```
 a + b  →  (a ^ b) + 2*(a & b)
@@ -108,33 +108,33 @@ a ^ b  →  (a | b) - (a & b)
 a - b  →  a + (~b) + 1
 ```
 
-### 2.4 快速分类表
+### 2.4 Quick Classification Table
 
-| 混淆类型 | IDA 特征 | 主要对抗手段 |
+| Obfuscation type | IDA characteristics | Primary countermeasures |
 |---------|---------|------------|
-| fla (平坦化) | 巨大 switch + 分发器 | obpo / d810-ng / deflat |
-| bcf (虚假控制流) | 不可达分支 + 死代码 | d810-ng opaque predicate removal / 符号执行 |
-| sub/MBA | 复杂算术表达式 | d810-ng MBA simplifier / SiMBA (Z3) |
-| fla + bcf + sub | 全上，极大膨胀 | **分层去混淆（先 bcf 再 fla 再 sub）** |
+| fla (flattening) | Large switch + dispatcher | obpo / d810-ng / deflat |
+| bcf (bogus control flow) | Unreachable branches + dead code | d810-ng opaque predicate removal / symbolic execution |
+| sub/MBA | Complex arithmetic expressions | d810-ng MBA simplifier / SiMBA (Z3) |
+| fla + bcf + sub | All techniques combined, with extreme expansion | **Layered deobfuscation (bcf, then fla, then sub)** |
 
 ---
 
-## 3. 主流工具详解（社区活跃项目）
+## 3. Detailed Guide to Major Tools (Active Community Projects)
 
-### 3.1 obpo-plugin — 最强效果，云插件
+### 3.1 obpo-plugin — Strongest Results, Cloud Plugin
 
-> [obpo-project/obpo-plugin](https://github.com/obpo-project/obpo-plugin) · 629⭐ · 2026-06 活跃
+> [obpo-project/obpo-plugin](https://github.com/obpo-project/obpo-plugin) · 629⭐ · Active in 2026-06
 
-基于 Hex-Rays **microcode** 的伪代码优化器，使用**数据流跟踪 + 程序切片 + 混合执行（concolic）**重建平坦化控制流。效果是社区公认最强之一。
+A Hex-Rays **microcode** pseudocode optimizer that reconstructs flattened control flow using **data-flow tracing + program slicing + hybrid execution (concolic)**. Its results are recognized by the community as among the strongest.
 
-**关键特性：**
-- 在 microcode 层操作，直接优化反编译输出（不是改 ASM）
-- 支持 IDA 7.5.0 / 7.6.0 / 7.7.0 + Hex-Rays
-- 架构：ARM, ARM64, x86, x86_64, PowerPC, PowerPC64, MIPS（7.6/7.5）
-- **云插件**：目标函数二进制会上传到 obpo-server 处理（核心闭源，插件免费开源）
-- 服务器自费维护，超时 600s，**禁止多线程/恶意调用**
+**Key features:**
+- Operates at the microcode layer and directly optimizes decompiler output (does not modify ASM)
+- Supports IDA 7.5.0 / 7.6.0 / 7.7.0 + Hex-Rays
+- Architectures: ARM, ARM64, x86, x86_64, PowerPC, PowerPC64, MIPS (7.6/7.5)
+- **Cloud plugin**: The target function binary is uploaded to obpo-server for processing (core closed-source, plugin freely open-source)
+- Self-funded server maintenance, 600s timeout, **multithreading/malicious calls prohibited**
 
-**安装与使用：**
+**Installation and usage:**
 ```text
 1. 下载 obpo_plugin.py 和 obpoplugin 目录
 2. 复制到 IDA plugins 路径
@@ -146,44 +146,44 @@ a - b  →  a + (~b) + 1
 7. 可根据反编译变化继续标记新的分发块（迭代处理嵌套 fla）
 ```
 
-**适用场景与限制：**
-- ✅ 标准和嵌套 fla，效果好
-- ⚠️ 需要联网，敏感样本（内部未公开漏洞、商业机密）慎用——二进制会上传
-- ⚠️ 服务器可能宕机，依赖作者维护
-- ❌ 不能解决所有混淆（作者明确声明）
+**Use cases and limitations:**
+- ✅ Standard and nested fla, with good results
+- ⚠️ Network required; use caution with sensitive samples (undisclosed internal vulnerabilities, trade secrets) because the binary is uploaded
+- ⚠️ The server may be unavailable; depends on the author's maintenance
+- ❌ Does not solve every obfuscation (as explicitly stated by the author)
 
-### 3.2 d810-ng — 本地一站式首选
+### 3.2 d810-ng — Local All-in-One First Choice
 
-> [w00tzenheimer/d810-ng](https://github.com/w00tzenheimer/d810-ng) · 223⭐ · 2026-06-26 更新
+> [w00tzenheimer/d810-ng](https://github.com/w00tzenheimer/d810-ng) · 223⭐ · Updated 2026-06-26
 
-D-810 的现代维护/重构版（Next Generation）。本地运行、开源、集成 **Z3 SMT** 求解器，变种覆盖最广。
+A modern maintained/refactored version of D-810 (Next Generation). Runs locally, is open source, integrates the **Z3 SMT** solver, and has the broadest variant coverage.
 
-**核心能力（按 d810-ng README 整理）：**
+**Core capabilities (organized from the d810-ng README):**
 
-*指令级优化：*
-| 类别 | 说明 |
+*Instruction-level optimization:*
+| Category | Description |
 |------|------|
-| MBA simplification | `(a+b)-2*(a&b) => a^b`，Z3 验证的 DSL 规则 |
-| Hacker's Delight | 位运算等价（来自 Hacker's Delight 一书） |
-| O-LLVM patterns | Obfuscator-LLVM 专用 MBA 模式 |
-| Constant folding | 22 条常量简化规则 |
-| Predicate simplification | 不透明谓词去除（setz/setnz/lnot/smod） |
-| Z3 rules | 模板匹配失败时用 SMT 求解 |
-| Hodur-specific | PlugX (Hodur) 恶意软件的 MBA 模式 |
+| MBA simplification | `(a+b)-2*(a&b) => a^b`, Z3-verified DSL rules |
+| Hacker's Delight | Bitwise equivalences (from the book Hacker's Delight) |
+| O-LLVM patterns | Obfuscator-LLVM-specific MBA patterns |
+| Constant folding | 22 constant simplification rules |
+| Predicate simplification | Opaque predicate removal (setz/setnz/lnot/smod) |
+| Z3 rules | SMT solving when template matching fails |
+| Hodur-specific | MBA patterns from PlugX (Hodur) malware |
 
-*控制流 Unflattener（按目标混淆分类）：*
-| Unflattener | 目标 | 说明 |
+*Control-flow unflatteners (classified by target obfuscation):*
+| Unflattener | Target | Description |
 |------------|------|------|
-| `Unflattener` | O-LLVM | 标准 switch/if-chain + 状态变量 |
-| `UnflattenerSwitchCase` | Tigress | Tigress switch-case 分发（`m_jtbl`） |
-| `UnflattenerTigressIndirect` | Tigress | Tigress 间接跳转（`m_ijmp`），需 `goto_table_info` 配置 |
-| `HodurUnflattener` | Hodur (PlugX) | 嵌套 `while(1)` + `jnz state, #CONST`，无 switch |
-| `BadWhileLoop` | Approov | `while(v8 != C)`，状态常量在 0xF6000–0xF6FFF |
-| `UnflattenerFakeJump` | 通用 | 去除恒真/恒假的条件跳转 |
-| `SingleIterationLoopUnflattener` | 残留 | 清理 `INIT == CHECK` 且 `UPDATE != CHECK` 的单次循环 |
-| `UnflattenControlFlowRule` (实验) | 通用 | 基于 path emulation 的 CFG unflattener |
+| `Unflattener` | O-LLVM | Standard switch/if-chain + state variable |
+| `UnflattenerSwitchCase` | Tigress | Tigress switch-case dispatcher (`m_jtbl`) |
+| `UnflattenerTigressIndirect` | Tigress | Tigress indirect jump (`m_ijmp`), requiring `goto_table_info` configuration |
+| `HodurUnflattener` | Hodur (PlugX) | Nested `while(1)` + `jnz state, #CONST`, no switch |
+| `BadWhileLoop` | Approov | `while(v8 != C)`, state constants at 0xF6000–0xF6FFF |
+| `UnflattenerFakeJump` | Generic | Removes always-true/always-false conditional jumps |
+| `SingleIterationLoopUnflattener` | Residual | Cleans single-iteration loops where `INIT == CHECK` and `UPDATE != CHECK` |
+| `UnflattenControlFlowRule` (experimental) | Generic | CFG unflattener based on path emulation |
 
-**安装与使用：**
+**Installation and usage:**
 ```text
 1. clone d810-ng
 2. 安装依赖（含 Z3）
@@ -193,24 +193,24 @@ D-810 的现代维护/重构版（Next Generation）。本地运行、开源、�
 6. 对目标函数应用
 ```
 
-**为什么选 d810-ng 而非原版 D-810：**
-- 原版 D-810 已较少维护
-- d810-ng 有 CI 测试、重构代码、新增 Tigress/Hodur/Approov 专用 unflattener
-- 集成 Z3，模板匹配失败时回退到 SMT 求解，成功率更高
+**Why choose d810-ng over original D-810:**
+- Original D-810 is less actively maintained
+- d810-ng has CI tests, refactored code, and dedicated Tigress/Hodur/Approov unflatteners
+- Integrates Z3 and falls back to SMT solving when template matching fails, improving the success rate
 
-### 3.3 ollvm-unflattener — Miasm 符号执行，纯脚本
+### 3.3 ollvm-unflattener — Miasm Symbolic Execution, Script Only
 
-> [cdong1012/ollvm-unflattener](https://github.com/cdong1012/ollvm-unflattener) · 265⭐ · 2026-06 活跃
+> [cdong1012/ollvm-unflattener](https://github.com/cdong1012/ollvm-unflattener) · 265⭐ · Active in 2026-06
 
-基于 **Miasm** 符号执行引擎，不依赖 IDA/BN，纯 Python 命令行。
+Based on the **Miasm** symbolic execution engine, with no IDA/BN dependency and a pure Python command-line interface.
 
-**特性：**
-- 用 Miasm 符号执行恢复原始控制流（区别于 MODeflattener 的纯静态方法）
-- **BFS 多层处理**：自动跟随目标函数的调用，递归去混淆
-- 支持 Windows/Linux x86/x64
-- 输出去混淆后的新二进制
+**Features:**
+- Uses Miasm symbolic execution to recover original control flow (unlike MODeflattener's purely static method)
+- **Multi-layer BFS processing**: Automatically follows calls from the target function and recursively deobfuscates
+- Supports Windows/Linux x86/x64
+- Outputs a new deobfuscated binary
 
-**安装与使用：**
+**Installation and usage:**
 ```bash
 git clone https://github.com/cdong1012/ollvm-unflattener.git
 cd ollvm-unflattener
@@ -221,31 +221,31 @@ python unflattener -i <input.bin> -o <output.bin> -t <function_addr> -a
 # -a: 自动跟随调用做多层处理
 ```
 
-**适用：** 无 IDA、目标 x86/x64、需要批量脚本化处理。
+**Use case:** No IDA, x86/x64 target, and a need for batch scripting.
 
-### 3.4 ollvm-breaker — Binary Ninja 实战
+### 3.4 ollvm-breaker — Binary Ninja in Practice
 
 > [amimo/ollvm-breaker](https://github.com/amimo/ollvm-breaker) · 441⭐
 
-使用 **Binary Ninja** 去平坦化，仓库自带 Android 加固样本 `libvdog.so` 作为测试用例，已修复 JNI_OnLoad、crazy::GetPackageName、prevent_attach_one 等函数。
+Uses **Binary Ninja** to deflatten binaries. The repository includes the hardened Android sample `libvdog.so` as a test case and has fixed functions including JNI_OnLoad, crazy::GetPackageName, and prevent_attach_one.
 
-**适用：** Binary Ninja 用户、Android .so 实战。
+**Use case:** Binary Ninja users and practical Android .so analysis.
 
 ### 3.5 deollvm — ARM64 Unicorn
 
 > [GeT1t/deollvm](https://github.com/GeT1t/deollvm) · 34⭐ · 2026-04
 
-基于 **Unicorn** 的 ARM64 OLLVM deflat。无 IDA 时处理 ARM64 .so 的备选。
+ARM64 OLLVM deflat based on **Unicorn**. An alternative for processing ARM64 .so files without IDA.
 
-### 3.6 DeObfBR — BR 混淆专项
+### 3.6 DeObfBR — BR Obfuscation Specialist
 
 > [Mrack/DeObfBR](https://github.com/Mrack/DeObfBR) · 96⭐ · 2026-06-25
 
-专门去除 **BR 混淆**（间接分支混淆，Goron/Arkari 风格）。
+Dedicated to removing **BR obfuscation** (indirect-branch obfuscation in the Goron/Arkari style).
 
-**⚠️ 简易对抗技巧（来自 awesome-ollvm）：** Goron/Arkari 风格的间接相关混淆，可以通过**设置数据段为只读**来简单对抗——间接跳转目标常依赖运行期可写的数据段，设只读后变成可静态求解。
+**⚠️ Simple countermeasure (from awesome-ollvm):** Goron/Arkari-style indirect obfuscation can be countered simply by **making the data segment read-only**—indirect jump targets often depend on a writable data segment at runtime, and making it read-only makes them statically solvable.
 
-### 3.7 angr — 符号执行通用框架
+### 3.7 angr — General Symbolic Execution Framework
 
 ```python
 import angr
@@ -259,13 +259,13 @@ deob = proj.analyses.Deobfuscator(func=func)
 deob.normalize()
 ```
 
-**⚠️ Pluto/Polaris 的 Trap Angr pass：** 这两个变种专门写了 trap 来坑 angr 符号执行。如果 angr 路径爆炸或异常，怀疑目标用了 Trap Angr → 改用 d810-ng 或 Unicorn 动态方法。
+**⚠️ Pluto/Polaris Trap Angr pass:** These two variants specifically add traps to thwart angr symbolic execution. If angr suffers path explosion or errors, suspect Trap Angr → switch to d810-ng or a dynamic Unicorn method.
 
 ---
 
-## 4. 完整脱密工作流（按场景）
+## 4. Complete Deobfuscation Workflow (By Scenario)
 
-### 4.1 通用决策树
+### 4.1 General Decision Tree
 
 ```
 目标二进制
@@ -297,17 +297,17 @@ deob.normalize()
   └── Frida hook 关键函数验证逻辑正确？
 ```
 
-### 4.2 Android NDK .so 脱密专项
+### 4.2 Android NDK .so Deobfuscation
 
-Android NDK 编译的 .so 经 OLLVM 加固是 APK 逆向最常见的场景。
+OLLVM-hardened .so files compiled with Android NDK are the most common APK reverse-engineering scenario.
 
-**Step 1 — 提取 .so：**
+**Step 1 — Extract the .so:**
 ```bash
 adb pull /data/app/~~/lib/arm64/libnative.so
 # 或从 APK 直接解压：unzip target.apk -d out/ ; find out -name "*.so"
 ```
 
-**Step 2 — 识别 OLLVM 与变种：**
+**Step 2 — Identify OLLVM and its variant:**
 ```bash
 readelf -a libnative.so | grep -E "Size|text"   # .text 异常大但函数少 → 大概率 OLLVM
 # IDA 打开看函数特征：
@@ -318,14 +318,14 @@ readelf -a libnative.so | grep -E "Size|text"   # .text 异常大但函数少 �
 #   while(1) + jnz state → Hodur，用 d810-ng HodurUnflattener
 ```
 
-**Step 3 — 脱密（分层）：**
+**Step 3 — Deobfuscate in layers:**
 ```
 a) bcf: d810-ng opaque predicate removal  (或 obpo 自动处理)
 b) fla: d810-ng Unflattener / obpo-plugin / deollvm(ARM64)
 c) sub: d810-ng MBA simplifier
 ```
 
-**Step 4 — Frida 动态验证：**
+**Step 4 — Dynamic validation with Frida:**
 ```javascript
 // Trace OLLVM 状态变量，辅助 deflat 确定状态变量地址
 const target = Module.findBaseAddress("libnative.so");
@@ -340,9 +340,9 @@ Interceptor.attach(target.add(0x1234), {  // dispatcher offset
 });
 ```
 
-### 4.3 CTF 场景快速脱密
+### 4.3 Quick Deobfuscation for CTF Scenarios
 
-CTF 通常时间紧，优先用最快路径：
+CTFs are usually time-constrained, so use the fastest path first:
 
 ```python
 #!/usr/bin/env python3
@@ -367,9 +367,9 @@ for func in funcs:
 
 ---
 
-## 5. MBA 表达式简化
+## 5. MBA Expression Simplification
 
-### 5.1 常见 OLLVM MBA 模式
+### 5.1 Common OLLVM MBA Patterns
 
 ```python
 # 这些等式是 OLLVM sub pass 生成表达式的化简目标
@@ -380,14 +380,14 @@ for func in funcs:
 "~(~a & ~b)"               # → a | b (De Morgan)
 ```
 
-### 5.2 工具选择
+### 5.2 Tool Selection
 
-| 工具 | 方式 | 适用 |
+| Tool | Method | Use case |
 |------|------|------|
-| **d810-ng MBA simplifier** | IDA 内批量，Z3 验证 | 首选，集成在反编译流程 |
-| **SiMBA** (`pip install simba-simplifier`) | 命令行/库 | 纯表达式化简，批量处理 |
-| **Arybo** | 符号位向量 | 大量 MBA 表达式 |
-| **Z3 直接求解** | SMT | 最通用，模板匹配都失败时 |
+| **d810-ng MBA simplifier** | Batch processing inside IDA, Z3-verified | First choice, integrated into the decompilation workflow |
+| **SiMBA** (`pip install simba-simplifier`) | Command line/library | Pure expression simplification and batch processing |
+| **Arybo** | Symbolic bit vectors | Large numbers of MBA expressions |
+| **Direct Z3 solving** | SMT | Most general; use when template matching fails completely |
 
 ```python
 # SiMBA 示例
@@ -399,7 +399,7 @@ for e in exprs:
 
 ---
 
-## 6. 完整脱密案例脚本
+## 6. Complete Deobfuscation Case Script
 
 ```bash
 #!/bin/bash
@@ -434,68 +434,68 @@ echo "[+] Done. 在 IDA 中重新分析验证。"
 
 ---
 
-## 7. 常见陷坑（社区实战总结）
+## 7. Common Pitfalls (Community Practice Summary)
 
-| 问题 | 原因 | 解决办法 |
+| Problem | Cause | Solution |
 |------|------|---------|
-| angr 路径爆炸/异常退出 | Pluto/Polaris 的 **Trap Angr** pass | 换 d810-ng 或 Unicorn 动态方法 |
-| obpo-plugin 联不上 | 服务器自费维护，可能宕机 | 转用本地 d810-ng；可在 obpo 仓库提 issue |
-| Goron/Arkari 间接跳转 deflat 失败 | 分发器用 BR x8 而非 switch | 先把数据段设只读，再用 DeObfBR |
-| d810-ng 处理后函数仍乱 | OLLVM 自定义了 pass 参数/seed | 先符号执行去不透明谓词，再 unflatten |
-| 嵌套 fla（多层平坦化）一次没清干净 | obpo/d810-ng 单次只清一层 | **迭代处理**：每次标记新出现的 dispatcher |
-| ARM64 .so 用 deflat 报错 | 老 deflat 脚本只支持 x86 | 用 d810-ng / obpo（支持 ARM64）/ deollvm |
-| Hikari 字符串看不到 | String Encryption pass | 用 Unicorn 模拟解密 stub，dump 解密后字符串 |
-| amice 目标 deflat 完全无效 | 含 VM Flatten / Instruction Virtualization | **不是 OLLVM fla**，需 VM handler 还原（参考 VM 逆向） |
-| Hodur(PugX) 样本没有 switch 分发器 | 嵌套 while(1) + jnz state | 用 d810-ng **HodurUnflattener**，别用普通 Unflattener |
-| Approov 样本状态常量看不出规律 | 常量集中在 0xF6000–0xF6FFF | 用 d810-ng **BadWhileLoop** unflattener |
-| 敏感样本误用 obpo | 二进制上传云服务 | 涉密/未公开漏洞样本**只用本地工具**（d810-ng/angr） |
-| Frida hook OLLVM 函数卡死 | 状态变量被改导致无限循环 | 在分发器入口加条件断点限制执行次数 |
+| angr path explosion/abnormal exit | Pluto/Polaris **Trap Angr** pass | Switch to d810-ng or a dynamic Unicorn method |
+| obpo-plugin cannot connect | Self-funded server maintenance; may be unavailable | Switch to local d810-ng; file an issue in the obpo repository |
+| Goron/Arkari indirect-jump deflat fails | Dispatcher uses BR x8 rather than switch | Make the data segment read-only first, then use DeObfBR |
+| Function remains chaotic after d810-ng processing | OLLVM customized pass parameters/seed | Use symbolic execution to remove opaque predicates, then unflatten |
+| Nested fla (multi-layer flattening) not fully cleared in one pass | obpo/d810-ng clears only one layer per run | **Iterate**: mark each newly appearing dispatcher |
+| ARM64 .so deflat reports an error | Old deflat scripts support x86 only | Use d810-ng / obpo (ARM64 supported) / deollvm |
+| Hikari strings are not visible | String Encryption pass | Emulate the decryption stub with Unicorn and dump decrypted strings |
+| amice target deflat is completely ineffective | Contains VM Flatten / Instruction Virtualization | **Not OLLVM fla**; restore VM handlers (see VM reverse engineering) |
+| Hodur(PugX) sample has no switch dispatcher | Nested while(1) + jnz state | Use d810-ng **HodurUnflattener**, not the ordinary Unflattener |
+| Approov sample state constants show no pattern | Constants concentrated at 0xF6000–0xF6FFF | Use d810-ng **BadWhileLoop** unflattener |
+| obpo used accidentally on a sensitive sample | Binary uploaded to cloud service | For confidential/undisclosed-vulnerability samples, **use local tools only** (d810-ng/angr) |
+| Frida hook of an OLLVM function hangs | State variable modification causes an infinite loop | Add a conditional breakpoint at the dispatcher entry to limit execution count |
 
 ---
 
-## 8. 工具速查表（2026 社区活跃度）
+## 8. Tool Quick Reference (2026 Community Activity)
 
-| 工具 | 平台 | 方式 | Stars/价 | 最近更新 | 开源 | 备注 |
+| Tool | Platform | Method | Stars/Price | Last update | Open source | Notes |
 |------|------|------|---------|---------|------|------|
-| **obpo-plugin** | IDA | microcode+concolic（云） | 629 | 2026-06 | 插件开源/核心闭源 | 效果最强，需联网 |
-| **ollvm-breaker** | Binary Ninja | BN API | 441 | 2026-06 | ✅ | Android .so 实战 |
-| **ollvm-unflattener** | CLI | Miasm 符号执行 | 265 | 2026-06 | ✅ | x86/x64，BFS 多层 |
-| **d810-ng** | IDA | microcode+Z3 | 223 | 2026-06 | ✅ | **本地首选**，变种覆盖广 |
-| **DeObfBR** | — | BR 混淆专项 | 96 | 2026-06 | ✅ | Goron/Arkari 间接分支 |
-| **IDA_Ollvm-unflattener** | IDA | Miasm 插件版 | 90 | 2026-04 | ✅ | ollvm-unflattener 的 IDA 插件封装 |
-| **deollvm** | CLI | Unicorn | 34 | 2026-04 | ✅ | ARM64 专项 |
-| **angr** | CLI | 符号执行 | — | 活跃 | ✅ | 通用，被 Trap Angr 克制 |
-| **SiMBA** | CLI/库 | MBA 化简 | — | — | ✅ | 表达式化简 |
-| **Triton** | CLI | 符号执行+污点 | — | 活跃 | ✅ | 动态符号执行 |
+| **obpo-plugin** | IDA | microcode+concolic (cloud) | 629 | 2026-06 | Plugin open-source/core closed-source | Strongest results, network required |
+| **ollvm-breaker** | Binary Ninja | BN API | 441 | 2026-06 | ✅ | Practical Android .so analysis |
+| **ollvm-unflattener** | CLI | Miasm symbolic execution | 265 | 2026-06 | ✅ | x86/x64, multi-layer BFS |
+| **d810-ng** | IDA | microcode+Z3 | 223 | 2026-06 | ✅ | **Local first choice**, broad variant coverage |
+| **DeObfBR** | — | BR obfuscation specialist | 96 | 2026-06 | ✅ | Goron/Arkari indirect branches |
+| **IDA_Ollvm-unflattener** | IDA | Miasm plugin version | 90 | 2026-04 | ✅ | IDA plugin wrapper for ollvm-unflattener |
+| **deollvm** | CLI | Unicorn | 34 | 2026-04 | ✅ | ARM64 specialist |
+| **angr** | CLI | Symbolic execution | — | Active | ✅ | General-purpose, constrained by Trap Angr |
+| **SiMBA** | CLI/library | MBA simplification | — | — | ✅ | Expression simplification |
+| **Triton** | CLI | Symbolic execution+taint | — | Active | ✅ | Dynamic symbolic execution |
 
 ---
 
-## 9. 参考链接
+## 9. Reference Links
 
-**混淆器（用于理解对抗目标）：**
-- [obfuscator-llvm/obfuscator](https://github.com/obfuscator-llvm/obfuscator) — 原始 OLLVM
+**Obfuscators (for understanding the targets of countermeasures):**
+- [obfuscator-llvm/obfuscator](https://github.com/obfuscator-llvm/obfuscator) — Original OLLVM
 - [HikariObfuscator/Hikari](https://github.com/HikariObfuscator/Hikari) — Hikari
-- [komimoe/Hikari](https://github.com/komimoe/Hikari) — Arkari (基于 goron, LLVM 14+)
+- [komimoe/Hikari](https://github.com/komimoe/Hikari) — Arkari (based on goron, LLVM 14+)
 - [amimo/goron](https://github.com/amimo/goron) — goron
 - [bluesadi/Pluto](https://github.com/bluesadi/Pluto) — Pluto
-- [za233/Polaris-Obfuscator](https://github.com/za233/Polaris-Obfuscator) — Polaris (原 Pluto)
+- [za233/Polaris-Obfuscator](https://github.com/za233/Polaris-Obfuscator) — Polaris (formerly Pluto)
 - [open-obfuscator/o-mvll](https://github.com/open-obfuscator/o-mvll) — O-MVLL
-- [fuqiuluo/amice](https://github.com/fuqiuluo/amice) — Rust 实现 OLLVM passes
-- [lich4/awesome-ollvm](https://github.com/lich4/awesome-ollvm) — **变种生态总览（强烈推荐先读）**
+- [fuqiuluo/amice](https://github.com/fuqiuluo/amice) — Rust implementation of OLLVM passes
+- [lich4/awesome-ollvm](https://github.com/lich4/awesome-ollvm) — **Variant ecosystem overview (strongly recommended first reading)**
 
-**反混淆工具：**
-- [obpo-project/obpo-plugin](https://github.com/obpo-project/obpo-plugin) — 最强云插件
-- [w00tzenheimer/d810-ng](https://github.com/w00tzenheimer/d810-ng) — 本地首选
-- [cdong1012/ollvm-unflattener](https://github.com/cdong1012/ollvm-unflattener) — Miasm 纯脚本
+**Deobfuscation tools:**
+- [obpo-project/obpo-plugin](https://github.com/obpo-project/obpo-plugin) — Strongest cloud plugin
+- [w00tzenheimer/d810-ng](https://github.com/w00tzenheimer/d810-ng) — Local first choice
+- [cdong1012/ollvm-unflattener](https://github.com/cdong1012/ollvm-unflattener) — Miasm script-only tool
 - [amimo/ollvm-breaker](https://github.com/amimo/ollvm-breaker) — Binary Ninja
 - [GeT1t/deollvm](https://github.com/GeT1t/deollvm) — ARM64 Unicorn
-- [Mrack/DeObfBR](https://github.com/Mrack/DeObfBR) — BR 混淆专项
-- [maskelihileci/IDA_Ollvm-unflattener](https://github.com/maskelihileci/IDA_Ollvm-unflattener) — IDA 插件版
-- [angr](https://angr.io/) — 符号执行框架
-- [SiMBA](https://github.com/tech-srl/simba) — MBA 化简
+- [Mrack/DeObfBR](https://github.com/Mrack/DeObfBR) — BR obfuscation specialist
+- [maskelihileci/IDA_Ollvm-unflattener](https://github.com/maskelihileci/IDA_Ollvm-unflattener) — IDA plugin version
+- [angr](https://angr.io/) — Symbolic execution framework
+- [SiMBA](https://github.com/tech-srl/simba) — MBA simplification
 
-**学术/博客：**
-- [Quarkslab: Deobfuscation: Recovering an OLLVM-protected program](https://blog.quarkslab.com/deobfuscation-recovering-an-ollvm-protected-program.html) — deflat 经典原理
-- [MODeflattener](https://github.com/mrT4ntr4/MODeflattener) — 静态 deflat（ollvm-unflattener 的对照）
+**Academic/blog:**
+- [Quarkslab: Deobfuscation: Recovering an OLLVM-protected program](https://blog.quarkslab.com/deobfuscation-recovering-an-ollvm-protected-program.html) — Classic deflat principles
+- [MODeflattener](https://github.com/mrT4ntr4/MODeflattener) — Static deflat (comparison for ollvm-unflattener)
 
-> 关联文档：[[anti-analysis.md]] (反调试/反分析总表)、[[tools-advanced.md]] (高级工具集)、[[elf-analysis.md]] (ELF 文件分析)、[[ai-assisted-re.md]] (AI 辅助逆向)
+> Related documents: [[anti-analysis.md]] (anti-debugging/anti-analysis overview), [[tools-advanced.md]] (advanced toolset), [[elf-analysis.md]] (ELF file analysis), [[ai-assisted-re.md]] (AI-assisted reverse engineering)
