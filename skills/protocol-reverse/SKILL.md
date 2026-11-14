@@ -9,33 +9,33 @@ Use this specialist workflow only after the master router and case scope gate ar
 
 # Protocol Reverse Engineering
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (execute immediately after reading)
 
-1. `NOW`: 读取 `../field-journal/precedent-reverse.md` — 确认授权与常规操作边界
-2. `NOW`: 确认任务是否为**协议/流量/序列化格式**逆向（非纯 Web 参数签名 → 转 `js-reverse/`）
-3. `NOW`: 若有目标网络交互 → `../scripts/case-init.ps1` 完成 scope；`auth` 未 granted 禁止对目标 ACT
-4. `NEXT`: 读取 `../tool-index.md`；缺工具 bootstrap（tshark/wireshark 等可能需手动）
-5. `ACT`: 进入工作流 Phase 1，产出帧布局或消息字典草稿
+1. `NOW`: Read `../field-journal/precedent-reverse.md` to confirm authorization and routine operational boundaries.
+2. `NOW`: Confirm the task involves **protocol, traffic, or serialization format** reverse engineering; route pure Web parameter signing to `js-reverse/`.
+3. `NOW`: For target network interaction, initialize scope with `../scripts/case-init.ps1`; do not ACT on the target unless `auth` is granted.
+4. `NEXT`: Read `../tool-index.md`; bootstrap missing tools (tshark/wireshark and others may require manual installation).
+5. `ACT`: Begin workflow Phase 1 and draft a frame layout or message dictionary.
 
-## 适用场景
+## Applicable Scenarios
 
-- 自定义 TCP/UDP 二进制协议
+- Custom TCP/UDP binary protocols
 - Protobuf / gRPC / FlatBuffers / MessagePack
-- WebSocket / MQTT / 私有 RPC
-- PCAP / PCAPNG 还原字段与状态机
-- 客户端-服务端校验、序列号、加密帧头
+- WebSocket / MQTT / private RPC
+- Recovering fields and state machines from PCAP / PCAPNG
+- Client-server validation, sequence numbers, and encrypted frame headers
 
-## 不走本 skill
+## Routing Exclusions
 
-| 情况 | 去哪 |
+| Scenario | Route |
 |------|------|
-| 仅 HTTP 参数签名 / JS 加密 | `js-reverse/` |
-| 仅 TLS 证书问题 | `pentest-tools/` 或浏览器代理 |
-| 固件内协议栈深挖 + 仿真 | `firmware-pentest/` 后再回本 skill |
+| HTTP parameter signing / JS encryption only | `js-reverse/` |
+| TLS certificate issues only | `pentest-tools/` or a browser proxy |
+| Deep analysis and emulation of a firmware protocol stack | `firmware-pentest/`, then return to this skill |
 
-## 工作流
+## Workflow
 
-### Phase 1 — 采集与分诊
+### Phase 1 — Collection and Triage
 
 ```text
 □ 拿到样本：PCAP / 代理导出 / 客户端日志 / 二进制
@@ -45,7 +45,7 @@ Use this specialist workflow only after the master router and case scope gate ar
 □ tshark -r cap.pcap -T fields -e frame.number -e ip.src -e tcp.payload
 ```
 
-### Phase 2 — 帧布局还原
+### Phase 2 — Frame Layout Recovery
 
 ```text
 □ 对齐多个同类消息，找不变字节 / 自增序列号
@@ -55,7 +55,7 @@ Use this specialist workflow only after the master router and case scope gate ar
 □ 工具：Wireshark 自定义 dissector 草稿 / ImHex / 010 Editor 模板 / Kaitai Struct
 ```
 
-### Phase 3 — 序列化与加密
+### Phase 3 — Serialization and Encryption
 
 ```text
 □ Protobuf：.proto 恢复（blackboxprotobuf / pbtk / protoc --decode_raw）
@@ -64,7 +64,7 @@ Use this specialist workflow only after the master router and case scope gate ar
 □ 重放：仅在授权 scope 内；先无害字段再敏感操作
 ```
 
-### Phase 4 — 产物
+### Phase 4 — Deliverables
 
 ```text
 MUST 产出：
@@ -73,30 +73,30 @@ MUST 产出：
 - Evidence：原始 hex 摘录 + 解码结果（脱敏）
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 必需 | 用途 | 自举 |
+| Tool | Required | Purpose | Bootstrap |
 |------|------|------|------|
-| tshark / Wireshark | 强烈建议 | PCAP 解析 | 手动 / winget |
-| Python3 | 是 | 解码脚本 | 系统 |
-| blackboxprotobuf | 可选 | 未知 protobuf | pip |
-| ImHex / 010 | 可选 | 结构模板 | 手动 |
-| IDA / r2 / Ghidra | 按需 | 客户端序列化函数 | 见对应 skill |
+| tshark / Wireshark | Strongly recommended | PCAP parsing | Manual / winget |
+| Python3 | Yes | Decoding scripts | System |
+| blackboxprotobuf | Optional | Unknown protobuf | pip |
+| ImHex / 010 | Optional | Structure templates | Manual |
+| IDA / r2 / Ghidra | As needed | Client serialization functions | See the corresponding skill |
 
-## 参考
+## References
 
-- `references/protocol-workflow.md` — 帧布局与 Protobuf 速查
-- 相关：`../ida-reverse/` `../js-reverse/` `../firmware-pentest/` `../pentest-tools/`
+- `references/protocol-workflow.md` — Frame layout and Protobuf quick reference
+- Related: `../ida-reverse/` `../js-reverse/` `../firmware-pentest/` `../pentest-tools/`
 
-## 路由上下文
+## Routing Context
 
-**上游**: `MASTER-ROUTING` R21 · `routing.md`  
-**下游**: 需客户端算法 → `ida-reverse`/`js-reverse`；需利用重放 → `pentest-tools`/`api-security`  
-**同级**: `malware-analysis`（C2 协议）、`digital-forensics`（流量取证）
+**Upstream**: `MASTER-ROUTING` R21 · `routing.md`
+**Downstream**: Client algorithm required → `ida-reverse`/`js-reverse`; replay exploitation required → `pentest-tools`/`api-security`
+**Peers**: `malware-analysis` (C2 protocols), `digital-forensics` (traffic forensics)
 
-## 任务完成自检
+## Completion Checklist
 
-- [ ] 是否还原了消息布局或状态机（而非只贴 hex）？
-- [ ] 是否有可复现解码命令？
-- [ ] 是否遵守 scope / 脱敏？
-- [ ] 是否回写 field-journal / 报告 Checklist？
+- [ ] Did you recover a message layout or state machine rather than only pasting hex?
+- [ ] Is there a reproducible decoding command?
+- [ ] Did you comply with scope and redaction requirements?
+- [ ] Did you update the field journal and report checklist?

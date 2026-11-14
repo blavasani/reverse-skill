@@ -9,22 +9,22 @@ Use this specialist workflow only after the master router and case scope gate ar
 
 # Identity Federation (SAML / OIDC / OAuth)
 
-## ACTION REQUIRED（读完后立刻执行）
+## ACTION REQUIRED (Execute immediately after reading)
 
-1. `NOW`: 读取 precedent-pentest；SSO 测试账号与 IdP/SP 范围入 scope
-2. `NOW`: 禁止锁定真实用户账户的暴力尝试
-3. `NEXT`: 抓包工具与文档（元数据 URL）
-4. `ACT`: 协议流映射 → 常见错配 → 验证
+1. `NOW`: Read precedent-pentest; add SSO test accounts and IdP/SP scope to scope
+2. `NOW`: Do not use brute-force attempts that could lock real user accounts
+3. `NEXT`: Packet-capture tools and documentation (metadata URL)
+4. `ACT`: Map the protocol flow → identify common misconfigurations → validate
 
-## 适用场景
+## Applicable scenarios
 
-- SAML Response 签名/断言篡改面（经典缺陷模式）
-- OIDC 隐式/授权码 + PKCE 缺失
-- redirect_uri / state / nonce 问题
-- IdP 与 SP 元数据、多租户 issuer 混淆
-- 与 `api-security` JWT 攻击互补（本 skill 偏联邦与 SSO 流）
+- SAML Response signature/assertion tampering surface (classic vulnerability pattern)
+- Missing PKCE for OIDC implicit/authorization-code flows
+- redirect_uri / state / nonce issues
+- IdP and SP metadata or multi-tenant issuer confusion
+- Complements `api-security` JWT attacks (this skill focuses on federation and SSO flows)
 
-## 工作流
+## Workflow
 
 ```text
 □ 画清：User → SP → IdP → Token → SP
@@ -34,27 +34,27 @@ Use this specialist workflow only after the master router and case scope gate ar
 □ 会话固定与登出失效
 ```
 
-## 工具链
+## Toolchain
 
-| 工具 | 用途 |
+| Tool | Purpose |
 |------|------|
-| Burp + SAML Raider 等 | 断言编辑（授权） |
-| jwt_tool | JWT 段 |
-| 浏览器 DevTools | 重定向链 |
-| IdP 管理日志 | 审计 |
+| Burp + SAML Raider, etc. | Assertion editing (authorized) |
+| jwt_tool | JWT segments |
+| Browser DevTools | Redirect chain |
+| IdP administration logs | Auditing |
 
-## 参考
+## References
 
 - `references/sso-flow-checklist.md`
-- `../api-security/` `../windows-ad/`（企业 IdP）
+- `../api-security/` `../windows-ad/` (enterprise IdP)
 
-## 路由上下文
+## Routing context
 
-**上游**: MASTER R37  
-**下游**: 纯 API JWT → api-security；云 IdP → cloud-k8s
+**Upstream**: MASTER R37
+**Downstream**: Pure API JWT → api-security; cloud IdP → cloud-k8s
 
-## 任务完成自检
+## Completion checklist
 
-- [ ] 是否映射完整 SSO 流？
-- [ ] 每个 Finding 是否有复现与影响？
-- [ ] Checklist？
+- [ ] Is the complete SSO flow mapped?
+- [ ] Does each Finding include reproduction steps and impact?
+- [ ] Checklist?
